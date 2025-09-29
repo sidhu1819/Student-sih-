@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en-IN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Lessons</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary-blue: #007bff; --secondary-green: #28a745; --light-bg: #f0f4f8; --white-card: #ffffff; --dark-text: #333; --light-text: #666; --header-purple: #667eea;}
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Nunito', sans-serif; background-color: var(--light-bg); color: var(--dark-text); }
+        .dashboard-container { max-width: 900px; margin: 0 auto; padding: 20px; }
+        .welcome-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 16px; margin-bottom: 30px; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1); }
+        .welcome-header-top { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        .header-controls { display: flex; align-items: center; flex-wrap: wrap; gap: 15px; }
+        #language-switcher { background-color: rgba(255, 255, 255, 0.2); color: white; border: 1px solid rgba(255, 255, 255, 0.3); padding: 8px 12px; border-radius: 25px; font-weight: 700; cursor: pointer; }
+        #language-switcher option { color: black; }
+        .header-link { background-color: rgba(255, 255, 255, 0.2); color: white; padding: 10px 20px; border-radius: 25px; text-decoration: none; font-weight: 700; }
+        .tab-nav { display: flex; background-color: #e9ecef; border-radius: 12px; padding: 5px; margin-bottom: 30px; }
+        .tab-btn { flex: 1; padding: 15px; border: none; background-color: transparent; font-family: 'Nunito', sans-serif; font-size: 1.1rem; font-weight: 800; color: var(--light-text); cursor: pointer; transition: background-color 0.3s, color 0.3s; border-radius: 8px; }
+        .tab-btn.active { background-color: var(--white-card); color: var(--header-purple); box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); }
+        .content-pane { display: none; animation: fadeIn 0.5s; }
+        .content-pane.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .lesson-container, .quiz-container { background-color: var(--white-card); padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); margin-bottom: 30px; }
+        .lesson-container h1 { font-size: 2.2rem; color: var(--primary-blue); margin-bottom: 20px; }
+        .lesson-container h2 { font-size: 1.6rem; color: var(--dark-text); margin-top: 25px; margin-bottom: 15px; }
+        .lesson-container p { font-size: 1.1rem; line-height: 1.7; margin-bottom: 15px; }
+        .lesson-container .example { background-color: var(--light-bg); padding: 15px; border-radius: 8px; margin: 15px 0; font-size: 1.2rem; }
+        .quiz-container h2 { font-size: 1.8rem; color: var(--secondary-green); margin-bottom: 20px; }
+        .quiz-question { margin-bottom: 20px; }
+        .quiz-question p { font-weight: 700; font-size: 1.1rem; margin-bottom: 10px; }
+        .quiz-options label { display: block; background-color: var(--light-bg); padding: 12px; border-radius: 8px; margin-bottom: 8px; cursor: pointer; transition: background-color 0.2s; }
+        .quiz-options label:hover { background-color: #e2e6ea; }
+        .quiz-options input { margin-right: 10px; }
+        .submit-quiz { display: inline-block; padding: 12px 30px; border: none; border-radius: 25px; background-color: var(--secondary-green); color: white; font-weight: 700; cursor: pointer; margin-top: 10px; }
+        .quiz-result { margin-top: 20px; font-weight: 700; font-size: 1.2rem; }
+        #chat-fab { position: fixed; bottom: 25px; right: 25px; width: 60px; height: 60px; background: linear-gradient(45deg, #007bff, #0056b3); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); cursor: pointer; z-index: 1001; transition: transform 0.2s; }
+        #chat-fab:hover { transform: scale(1.1); }
+        #chat-fab svg { width: 32px; height: 32px; color: white; }
+        #chat-window { display: none; position: fixed; bottom: 100px; right: 25px; width: 350px; max-width: 90vw; height: 500px; max-height: 70vh; background-color: var(--white-card); border-radius: 16px; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15); z-index: 1000; display: none; flex-direction: column; overflow: hidden; }
+        #chat-window.active { display: flex; }
+        .chat-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px; font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
+        .chat-header-title { font-size: 1.1rem; }
+        #chat-close-btn { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
+        .chat-messages { flex-grow: 1; padding: 15px; overflow-y: auto; background-color: #f0f4f8; }
+        .chat-message { padding: 10px 15px; border-radius: 18px; margin-bottom: 10px; max-width: 80%; line-height: 1.4; }
+        .user-message { background-color: var(--primary-blue); color: white; align-self: flex-end; margin-left: auto; border-bottom-right-radius: 4px; }
+        .bot-message { background-color: #e9ecef; color: var(--dark-text); align-self: flex-start; border-bottom-left-radius: 4px; }
+        .chat-input-container { padding: 10px; border-top: 1px solid #eee; display: flex; gap: 10px; }
+        #chat-input { flex-grow: 1; border: 1px solid #ccc; border-radius: 20px; padding: 10px 15px; font-size: 1rem; font-family: 'Nunito', sans-serif; }
+        #chat-send-btn { border: none; background-color: var(--primary-blue); color: white; font-weight: 700; border-radius: 20px; padding: 10px 20px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="dashboard-container">
+    <header class="welcome-header">
+        <div class="welcome-header-top">
+            <a href="learning-journey.html#english" class="header-link" data-key="back_to_journey">← Back to Journey</a>
+            <div class="header-controls">
+                <select id="language-switcher">
+                    <option value="en">English</option>
+                    <option value="pa">ਪੰਜਾਬੀ</option>
+                </select>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="tab-nav">
+            <button class="tab-btn" data-tab="chapter1" data-key="tab_chap1">Chapter 1</button>
+            <button class="tab-btn" data-tab="chapter2" data-key="tab_chap2">Chapter 2</button>
+            <button class="tab-btn" data-tab="chapter3" data-key="tab_chap3">Chapter 3</button>
+            <button class="tab-btn" data-tab="chapter4" data-key="tab_chap4">Chapter 4</button>
+        </div>
+
+        <div id="chapter1" class="content-pane">
+            <div class="lesson-container">
+                <h1 data-key="c1_title">Chapter 1: The Alphabet</h1>
+                <p data-key="c1_p1">The English alphabet has 26 letters. Each letter has a capital (A) and a small (a) form. The five vowels are A, E, I, O, U. All other letters are consonants.</p>
+            </div>
+            <div class="quiz-container">
+                <h2 data-key="quiz_title">Test Your Knowledge</h2>
+                <p data-key="c1_q1_text">1. Which of these is a vowel?</p>
+                <div class="quiz-options">
+                    <label><input type="radio" name="c1_q1" value="B"> B</label>
+                    <label><input type="radio" name="c1_q1" value="E"> E</label>
+                    <label><input type="radio" name="c1_q1" value="T"> T</label>
+                </div>
+                <button class="submit-quiz" data-quiz="1" data-key="submit_btn">Submit</button>
+                <div class="quiz-result" id="quiz-result-1"></div>
+            </div>
+        </div>
+
+        <div id="chapter2" class="content-pane">
+            <div class="lesson-container">
+                <h1 data-key="c2_title">Chapter 2: Nouns</h1>
+                <p data-key="c2_p1">A noun is a word for a person, place, or thing. For example, 'boy', 'school', and 'book' are all nouns.</p>
+                <div class="example" data-key="c2_example"><strong>Person:</strong> teacher, Rohan. <strong>Place:</strong> village, Punjab. <strong>Thing:</strong> table, ball.</div>
+            </div>
+            <div class="quiz-container">
+                <h2 data-key="quiz_title">Test Your Knowledge</h2>
+                <p data-key="c2_q1_text">1. Which word is a noun in the sentence: "The dog ran home."?</p>
+                <div class="quiz-options">
+                    <label><input type="radio" name="c2_q1" value="The"> The</label>
+                    <label><input type="radio" name="c2_q1" value="ran"> ran</label>
+                    <label><input type="radio" name="c2_q1" value="dog"> dog</label>
+                </div>
+                <button class="submit-quiz" data-quiz="2" data-key="submit_btn">Submit</button>
+                <div class="quiz-result" id="quiz-result-2"></div>
+            </div>
+        </div>
+        
+        <div id="chapter3" class="content-pane">
+            <div class="lesson-container">
+                <h1 data-key="c3_title">Chapter 3: Verbs</h1>
+                <p data-key="c3_p1">A verb is an action word. It tells you what the noun is doing. For example, 'run', 'jump', and 'read' are verbs.</p>
+                <div class="example" data-key="c3_example">She <strong>reads</strong> a book. He <strong>plays</strong> outside.</div>
+            </div>
+            <div class="quiz-container">
+                <h2 data-key="quiz_title">Test Your Knowledge</h2>
+                <p data-key="c3_q1_text">1. Which word is the verb in the sentence: "Birds fly in the sky."?</p>
+                <div class="quiz-options">
+                    <label><input type="radio" name="c3_q1" value="Birds"> Birds</label>
+                    <label><input type="radio" name="c3_q1" value="fly"> fly</label>
+                    <label><input type="radio" name="c3_q1" value="sky"> sky</label>
+                </div>
+                <button class="submit-quiz" data-quiz="3" data-key="submit_btn">Submit</button>
+                <div class="quiz-result" id="quiz-result-3"></div>
+            </div>
+        </div>
+
+        <div id="chapter4" class="content-pane">
+            <div class="lesson-container">
+                <h1 data-key="c4_title">Chapter 4: Simple Sentences</h1>
+                <p data-key="c4_p1">A simple sentence has a noun (subject) and a verb (predicate). It expresses a complete thought.</p>
+                <div class="example" data-key="c4_example"><strong>Subject</strong> + <strong>Verb</strong>. "The sun shines."</div>
+            </div>
+            <div class="quiz-container">
+                <h2 data-key="quiz_title">Test Your Knowledge</h2>
+                <p data-key="c4_q1_text">1. Which is a complete sentence?</p>
+                <div class="quiz-options">
+                    <label><input type="radio" name="c4_q1" value="a"> The big red ball.</label>
+                    <label><input type="radio" name="c4_q1" value="b"> Runs very fast.</label>
+                    <label><input type="radio" name="c4_q1" value="c"> The boy kicks the ball.</label>
+                </div>
+                <button class="submit-quiz" data-quiz="4" data-key="submit_btn">Submit</button>
+                <div class="quiz-result" id="quiz-result-4"></div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- CHATBOT -->
+<div id="chat-fab">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8 15c4.418 0 8-3.134 8-7s-3.582-7-8-7-8 3.134-8 7c0 1.76.743 3.37 1.97 4.6-.097 1.016-.417 2.13-.771 2.966-.079.186.074.394.273.362 2.256-.37 3.597-.938 4.18-1.234A9.06 9.06 0 0 0 8 15z"/></svg>
+</div>
+<div id="chat-window">
+    <div class="chat-header"><span class="chat-header-title" data-key="chatbot_title">Chat Help</span><button id="chat-close-btn">&times;</button></div>
+    <div class="chat-messages" id="chat-messages"></div>
+    <div class="chat-input-container"><input type="text" id="chat-input" data-key-placeholder="chatbot_placeholder"><button id="chat-send-btn" data-key="chatbot_send_btn">Send</button></div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const languageSwitcher = document.getElementById('language-switcher');
+    const tabs = document.querySelectorAll('.tab-btn');
+    const panes = document.querySelectorAll('.content-pane');
+
+    const translations = {
+        en: {
+            back_to_journey: '← Back to Journey',
+            tab_chap1: 'Chapter 1', tab_chap2: 'Chapter 2', tab_chap3: 'Chapter 3', tab_chap4: 'Chapter 4',
+            quiz_title: 'Test Your Knowledge', submit_btn: 'Submit',
+            c1_title: 'Chapter 1: The Alphabet', c1_p1: "The English alphabet has 26 letters. Each letter has a capital (A) and a small (a) form. The five vowels are A, E, I, O, U. All other letters are consonants.", c1_q1_text: '1. Which of these is a vowel?',
+            c2_title: 'Chapter 2: Nouns', c2_p1: "A noun is a word for a person, place, or thing. For example, 'boy', 'school', and 'book' are all nouns.", c2_example: '<strong>Person:</strong> teacher, Rohan. <strong>Place:</strong> village, Punjab. <strong>Thing:</strong> table, ball.', c2_q1_text: '1. Which word is a noun in the sentence: "The dog ran home."?',
+            c3_title: 'Chapter 3: Verbs', c3_p1: "A verb is an action word. It tells you what the noun is doing. For example, 'run', 'jump', and 'read' are verbs.", c3_example: 'She <strong>reads</strong> a book. He <strong>plays</strong> outside.', c3_q1_text: '1. Which word is the verb in the sentence: "Birds fly in the sky."?',
+            c4_title: 'Chapter 4: Simple Sentences', c4_p1: "A simple sentence has a noun (subject) and a verb (predicate). It expresses a complete thought.", c4_example: '<strong>Subject</strong> + <strong>Verb</strong>. "The sun shines."', c4_q1_text: '1. Which is a complete sentence?',
+            chatbot_title: 'Chat Help', chatbot_placeholder: 'Type a message...', chatbot_send_btn: 'Send'
+        },
+        pa: {
+            back_to_journey: '← ਸਫ਼ਰ \'ਤੇ ਵਾਪਸ',
+            tab_chap1: 'ਅਧਿਆਇ 1', tab_chap2: 'ਅਧਿਆਇ 2', tab_chap3: 'ਅਧਿਆਇ 3', tab_chap4: 'ਅਧਿਆਇ 4',
+            quiz_title: 'ਆਪਣੇ ਗਿਆਨ ਦੀ ਜਾਂਚ ਕਰੋ', submit_btn: 'ਜਮ੍ਹਾਂ ਕਰੋ',
+            c1_title: 'ਅਧਿਆਇ 1: ਵਰਣਮਾਲਾ', c1_p1: "ਅੰਗਰੇਜ਼ੀ ਵਰਣਮਾਲਾ ਵਿੱਚ 26 ਅੱਖਰ ਹਨ। ਹਰੇਕ ਅੱਖਰ ਦਾ ਇੱਕ ਵੱਡਾ (A) ਅਤੇ ਛੋਟਾ (a) ਰੂਪ ਹੁੰਦਾ ਹੈ। ਪੰਜ ਸਵਰ A, E, I, O, U ਹਨ। ਬਾਕੀ ਸਾਰੇ ਅੱਖਰ ਵਿਅੰਜਨ ਹਨ।", c1_q1_text: '1. ਇਹਨਾਂ ਵਿੱਚੋਂ ਕਿਹੜਾ ਇੱਕ ਸਵਰ ਹੈ?',
+            c2_title: 'ਅਧਿਆਇ 2: ਨਾਂਵ', c2_p1: "ਨਾਂਵ ਕਿਸੇ ਵਿਅਕਤੀ, ਸਥਾਨ ਜਾਂ ਚੀਜ਼ ਲਈ ਇੱਕ ਸ਼ਬਦ ਹੈ। ਉਦਾਹਰਣ ਵਜੋਂ, 'ਲੜਕਾ', 'ਸਕੂਲ', ਅਤੇ 'ਕਿਤਾਬ' ਸਾਰੇ ਨਾਂਵ ਹਨ।", c2_example: '<strong>ਵਿਅਕਤੀ:</strong> ਅਧਿਆਪਕ, ਰੋਹਨ। <strong>ਸਥਾਨ:</strong> ਪਿੰਡ, ਪੰਜਾਬ। <strong>ਚੀਜ਼:</strong> ਮੇਜ਼, ਗੇਂਦ।', c2_q1_text: '1. "ਕੁੱਤਾ ਘਰ ਭੱਜਿਆ।" ਵਾਕ ਵਿੱਚ ਕਿਹੜਾ ਸ਼ਬਦ ਨਾਂਵ ਹੈ?',
+            c3_title: 'ਅਧਿਆਇ 3: ਕਿਰਿਆਵਾਂ', c3_p1: "ਕਿਰਿਆ ਇੱਕ ਕਿਰਿਆ ਸ਼ਬਦ ਹੈ। ਇਹ ਦੱਸਦਾ ਹੈ ਕਿ ਨਾਂਵ ਕੀ ਕਰ ਰਿਹਾ ਹੈ। ਉਦਾਹਰਣ ਵਜੋਂ, 'ਦੌੜਨਾ', 'ਛਾਲ ਮਾਰਨਾ', ਅਤੇ 'ਪੜ੍ਹਨਾ' ਕਿਰਿਆਵਾਂ ਹਨ।", c3_example: 'ਉਹ ਇੱਕ ਕਿਤਾਬ <strong>ਪੜ੍ਹਦੀ</strong> ਹੈ। ਉਹ ਬਾਹਰ <strong>ਖੇਡਦਾ</strong> ਹੈ।', c3_q1_text: '1. "ਪੰਛੀ ਆਸਮਾਨ ਵਿੱਚ ਉੱਡਦੇ ਹਨ।" ਵਾਕ ਵਿੱਚ ਕਿਰਿਆ ਕਿਹੜਾ ਸ਼ਬਦ ਹੈ?',
+            c4_title: 'ਅਧਿਆਇ 4: ਸਧਾਰਨ ਵਾਕ', c4_p1: "ਇੱਕ ਸਧਾਰਨ ਵਾਕ ਵਿੱਚ ਇੱਕ ਨਾਂਵ (ਵਿਸ਼ਾ) ਅਤੇ ਇੱਕ ਕਿਰਿਆ (ਵਿਸ਼ੇਸ਼ਣ) ਹੁੰਦਾ ਹੈ। ਇਹ ਇੱਕ ਪੂਰਾ ਵਿਚਾਰ ਪ੍ਰਗਟ ਕਰਦਾ ਹੈ।", c4_example: '<strong>ਵਿਸ਼ਾ</strong> + <strong>ਕਿਰਿਆ</strong>. "ਸੂਰਜ ਚਮਕਦਾ ਹੈ।"', c4_q1_text: '1. ਕਿਹੜਾ ਇੱਕ ਪੂਰਾ ਵਾਕ ਹੈ?',
+            chatbot_title: 'ਚੈਟ ਮਦਦ', chatbot_placeholder: 'ਇੱਕ ਸੁਨੇਹਾ ਟਾਈਪ ਕਰੋ...', chatbot_send_btn: 'ਭੇਜੋ'
+        }
+    };
+    const setLanguage = (language) => { 
+        document.querySelectorAll('[data-key]').forEach(element => { 
+            const key = element.getAttribute('data-key'); 
+            const target = translations[language][key];
+            if (target) { 
+                // Check if the element has other child nodes (like strong tags)
+                if (element.children.length > 0 && (key === 'c2_example' || key === 'c4_example')) {
+                    // It's a complex element, don't just set textContent
+                } else {
+                    element.textContent = target; 
+                }
+            } 
+        }); 
+        document.querySelectorAll('[data-key-placeholder]').forEach(element => { const key = element.getAttribute('data-key-placeholder'); if (translations[language][key]) { element.placeholder = translations[language][key]; } });
+        document.documentElement.lang = language === 'pa' ? 'pa-IN' : 'en-IN'; 
+    };
+    languageSwitcher.addEventListener('change', (event) => setLanguage(event.target.value));
+    
+    const showPane = (tabId) => {
+        panes.forEach(pane => pane.classList.remove('active'));
+        tabs.forEach(tab => tab.classList.remove('active'));
+        const paneToShow = document.getElementById(tabId);
+        if (paneToShow) {
+            paneToShow.classList.add('active');
+            document.querySelector(`.tab-btn[data-tab="${tabId}"]`).classList.add('active');
+        }
+    };
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const tabId = tab.getAttribute('data-tab');
+            window.location.hash = tabId;
+            showPane(tabId);
+        });
+    });
+    const initialTab = window.location.hash.substring(1) || 'chapter1';
+    showPane(initialTab);
+
+    // --- Quiz Logic ---
+    const quizAnswers = { '1': { 'c1_q1': 'E' }, '2': { 'c2_q1': 'dog' }, '3': { 'c3_q1': 'fly' }, '4': { 'c4_q1': 'c' } };
+    document.querySelectorAll('.submit-quiz').forEach(button => {
+        button.addEventListener('click', (event) => {
+            const quizNum = event.target.getAttribute('data-quiz');
+            const resultDiv = document.getElementById(`quiz-result-${quizNum}`);
+            const answers = quizAnswers[quizNum];
+            let score = 0;
+            let total = 0;
+            for (const question in answers) {
+                total++;
+                const selected = document.querySelector(`input[name="${question}"]:checked`);
+                if (selected && selected.value === answers[question]) {
+                    score++;
+                }
+            }
+            const lang = languageSwitcher.value;
+            resultDiv.textContent = lang === 'pa' ? `ਤੁਹਾਡਾ ਸਕੋਰ ਹੈ: ${total} ਵਿੱਚੋਂ ${score}` : `Your score is: ${score} out of ${total}`;
+        });
+    });
+
+    // --- CHATBOT SCRIPT ---
+    const chatFab = document.getElementById('chat-fab');
+    const chatWindow = document.getElementById('chat-window');
+    const chatCloseBtn = document.getElementById('chat-close-btn');
+    const chatMessages = document.getElementById('chat-messages');
+    const chatInput = document.getElementById('chat-input');
+    const chatSendBtn = document.getElementById('chat-send-btn');
+    const chatBotData = { en: { default: "Sorry, I don't understand. You can ask me how to go back to the journey page.", greeting: "Hello! I can help you with questions about this lesson page.", responses: { 'journey back': "To go back to the Learning Journey page, click the '← Back to Journey' link at the top of the page.", 'language punjabi english': "Use the language switcher dropdown menu at the top-right of the page to switch between English and Punjabi." } }, pa: { default: "ਮਾਫ਼ ਕਰਨਾ, ਮੈਨੂੰ ਸਮਝ ਨਹੀਂ ਆਇਆ। ਤੁਸੀਂ ਮੈਨੂੰ ਪੁੱਛ ਸਕਦੇ ਹੋ ਕਿ ਸਫ਼ਰ ਪੰਨੇ 'ਤੇ ਵਾਪਸ ਕਿਵੇਂ ਜਾਣਾ ਹੈ।", greeting: "ਸਤਿ ਸ਼੍ਰੀ ਅਕਾਲ! ਮੈਂ ਇਸ ਪਾਠ ਪੰਨੇ ਬਾਰੇ ਸਵਾਲਾਂ ਵਿੱਚ ਤੁਹਾਡੀ ਮਦਦ ਕਰ ਸਕਦਾ ਹਾਂ।", responses: { 'ਸਫ਼ਰ ਵਾਪਸ': "ਲਰਨਿੰਗ ਜਰਨੀ ਪੰਨੇ 'ਤੇ ਵਾਪਸ ਜਾਣ ਲਈ, ਪੰਨੇ ਦੇ ਸਿਖਰ 'ਤੇ '← ਸਫ਼ਰ \'ਤੇ ਵਾਪਸ' ਲਿੰਕ 'ਤੇ ਕਲਿੱਕ ਕਰੋ।", 'ਭਾਸ਼ਾ ਪੰਜਾਬੀ ਅੰਗਰੇਜ਼ੀ': "ਅੰਗਰੇਜ਼ੀ ਅਤੇ ਪੰਜਾਬੀ ਵਿੱਚ ਬਦਲਣ ਲਈ ਪੰਨੇ ਦੇ ਉੱਪਰ-ਸੱਜੇ ਪਾਸੇ ਭਾਸ਼ਾ ਸਵਿੱਚਰ ਡ੍ਰੌਪਡਾਉਨ ਮੀਨੂ ਦੀ ਵਰਤੋਂ ਕਰੋ।" } } };
+    const toggleChatWindow = () => { chatWindow.classList.toggle('active'); if (chatWindow.classList.contains('active')) { addMessageToChat('bot', chatBotData[languageSwitcher.value].greeting); } else { chatMessages.innerHTML = ''; } };
+    const addMessageToChat = (sender, message) => { const messageElement = document.createElement('div'); messageElement.classList.add('chat-message', sender === 'user' ? 'user-message' : 'bot-message'); messageElement.textContent = message; chatMessages.appendChild(messageElement); chatMessages.scrollTop = chatMessages.scrollHeight; };
+    const getBotResponse = (userInput) => { const lang = languageSwitcher.value; const lowerInput = userInput.toLowerCase(); const responses = chatBotData[lang].responses; for (const keywords in responses) { const keywordArray = keywords.split(' '); if (keywordArray.some(keyword => lowerInput.includes(keyword))) { return responses[keywords]; } } return chatBotData[lang].default; };
+    const handleSendMessage = () => { const userInput = chatInput.value.trim(); if (userInput === '') return; addMessageToChat('user', userInput); chatInput.value = ''; setTimeout(() => { const botResponse = getBotResponse(userInput); addMessageToChat('bot', botResponse); }, 500); };
+    chatFab.addEventListener('click', toggleChatWindow);
+    chatCloseBtn.addEventListener('click', toggleChatWindow);
+    chatSendBtn.addEventListener('click', handleSendMessage);
+    chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') { handleSendMessage(); } });
+
+    setLanguage(languageSwitcher.value);
+});
+</script>
+
+</body>
+</html>
+

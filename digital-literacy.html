@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en-IN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Literacy Hub</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-blue: #007bff;
+            --secondary-green: #28a745;
+            --light-bg: #f0f4f8;
+            --white-card: #ffffff;
+            --dark-text: #333;
+            --light-text: #666;
+            --orange: #fd7e14;
+        }
+
+        /* --- Basic & Header Styles --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Nunito', sans-serif; background-color: var(--light-bg); color: var(--dark-text); }
+        #offline-banner { display: none; background-color: #ffc107; color: #333; text-align: center; padding: 10px; font-weight: 700; position: sticky; top: 0; z-index: 1000; align-items: center; justify-content: center; gap: 10px; }
+        .dashboard-container { max-width: 900px; margin: 0 auto; padding: 20px; }
+        .welcome-header { background: linear-gradient(135deg, #fd7e14 0%, #ffb900 100%); color: white; padding: 25px; border-radius: 16px; margin-bottom: 30px; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1); }
+        .welcome-header-top { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        .header-controls { display: flex; align-items: center; flex-wrap: wrap; gap: 15px; }
+        #language-switcher { background-color: rgba(255, 255, 255, 0.2); color: white; border: 1px solid rgba(255, 255, 255, 0.3); padding: 8px 12px; border-radius: 25px; font-weight: 700; cursor: pointer; }
+        #language-switcher option { color: black; }
+        .header-link { background-color: rgba(255, 255, 255, 0.2); color: white; padding: 10px 20px; border-radius: 25px; text-decoration: none; font-weight: 700; transition: background-color 0.2s; white-space: nowrap; }
+        .header-link:hover { background-color: rgba(255, 255, 255, 0.3); }
+
+        /* --- OFFLINE TOGGLE --- */
+        .offline-toggle-container { display: flex; align-items: center; gap: 10px; color: white; }
+        .offline-toggle-container span { font-weight: 700; font-size: 0.9rem; }
+        .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
+        .switch input { display: none; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 28px; }
+        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--secondary-green); }
+        input:checked + .slider:before { transform: translateX(22px); }
+
+        /* --- Tab Navigation --- */
+        .tab-nav {
+            display: flex;
+            background-color: #e9ecef;
+            border-radius: 12px;
+            padding: 5px;
+            margin-bottom: 30px;
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            background-color: transparent;
+            font-family: 'Nunito', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: var(--light-text);
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
+            border-radius: 8px;
+        }
+        .tab-btn.active {
+            background-color: var(--white-card);
+            color: var(--orange);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        /* --- Content Panes --- */
+        .content-pane {
+            display: none; /* All panes hidden by default */
+            background-color: var(--white-card);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            animation: fadeIn 0.5s;
+        }
+        .content-pane.active {
+            display: block; /* Show the active pane */
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .content-pane h2 { font-size: 2rem; color: var(--primary-blue); margin-bottom: 20px; }
+        .content-pane h3 { font-size: 1.4rem; color: var(--dark-text); margin-top: 25px; margin-bottom: 10px; }
+        .content-pane p { line-height: 1.6; margin-bottom: 15px; }
+        .content-pane img { max-width: 100%; border-radius: 8px; margin: 10px 0; }
+        
+        /* --- Online Safety List --- */
+        .safety-list { list-style: none; padding-left: 0; }
+        .safety-list li { display: flex; align-items: flex-start; margin-bottom: 20px; font-size: 1.1rem; }
+        .safety-list svg { flex-shrink: 0; width: 24px; height: 24px; color: var(--secondary-green); margin-right: 15px; margin-top: 4px; }
+
+        /* --- Typing Practice Section --- */
+        #text-to-type {
+            font-size: 1.5rem;
+            background-color: #e9ecef;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-family: monospace;
+            letter-spacing: 2px;
+        }
+        #typing-input {
+            width: 100%;
+            height: 120px;
+            font-size: 1.5rem;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid #ccc;
+            resize: none;
+            font-family: monospace;
+            letter-spacing: 2px;
+        }
+        #typing-result {
+            margin-top: 20px;
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+        .typing-btn { display: inline-block; padding: 12px 30px; border: none; border-radius: 8px; background-color: var(--secondary-green); color: white; font-weight: 700; cursor: pointer; margin-top: 15px; }
+    </style>
+</head>
+<body>
+
+<div id="offline-banner">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M10.706 9.953.5 1.157A.5.5 0 0 1 1 1h14a.5.5 0 0 1 .5.5v7.025a.5.5 0 0 1-.5.5H13a3.5 3.5 0 0 0-2.294-.953zM1 1.843l8.843 8.117a4.5 4.5 0 0 1-2.434-1.225L1 1.843zm13.442 7.157a4.485 4.485 0 0 1-1.615.82L3.5 2h10.942v7.001zM16 12.5a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0zm-4.146-2.646a.5.5 0 0 0-.708 0L9.5 11.5l-1.646-1.647a.5.5 0 0 0-.708.708L8.793 12.207l-1.647 1.646a.5.5 0 0 0 .708.708L9.5 12.914l1.646 1.647a.5.5 0 0 0 .708-.708L10.207 12.207l1.647-1.646a.5.5 0 0 0 0-.708z"/></svg>
+    <span data-key="offline_banner_text">Offline Mode Active</span>
+</div>
+
+<div class="dashboard-container">
+    <header class="welcome-header">
+        <div class="welcome-header-top">
+            <a href="student-dashboard.html" class="header-link" data-key="back_to_dashboard">← Back to Dashboard</a>
+            <div class="header-controls">
+                <div class="offline-toggle-container">
+                    <span data-key="offline_mode_label">Offline Mode</span>
+                    <label class="switch">
+                        <input type="checkbox" id="offline-toggle">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <select id="language-switcher">
+                    <option value="en">English</option>
+                    <option value="pa">ਪੰਜਾਬੀ</option>
+                </select>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="tab-nav">
+            <button class="tab-btn" data-tab="basics" data-key="tab_basics">Computer Basics</button>
+            <button class="tab-btn" data-tab="safety" data-key="tab_safety">Online Safety</button>
+            <button class="tab-btn" data-tab="typing" data-key="tab_typing">Typing Practice</button>
+        </div>
+
+        <div id="basics" class="content-pane">
+            <h2 data-key="basics_title">Welcome to Computer Basics!</h2>
+            <p data-key="basics_intro">Let's learn about the main parts of a computer. Knowing these parts helps you use the computer better for learning and fun!</p>
+            
+            <h3 data-key="basics_what_is_computer">What is a Computer?</h3>
+            <p data-key="basics_what_is_computer_desc">A computer is an electronic machine that processes information. You can use it to write, draw, play games, find information, and much more.</p>
+            <h3 data-key="basics_monitor">The Monitor (Screen)</h3>
+            <p data-key="basics_monitor_desc">The monitor is like a television screen. It shows you everything you are working on, like text, pictures, and videos.</p>
+            <h3 data-key="basics_keyboard">The Keyboard</h3>
+            <p data-key="basics_keyboard_desc">The keyboard has many buttons called 'keys'. You press these keys to type letters, numbers, and symbols onto the screen.</p>
+            <h3 data-key="basics_mouse">The Mouse</h3>
+            <p data-key="basics_mouse_desc">The mouse is a small device you move with your hand. It moves a pointer (or cursor) on the screen to click on things and open programs.</p>
+        </div>
+
+        <div id="safety" class="content-pane">
+            <h2 data-key="safety_title">Staying Safe Online</h2>
+            <p data-key="safety_intro">The internet is a wonderful place to learn and have fun, but it's important to be safe. Here are three golden rules to always remember!</p>
+            <ul class="safety-list">
+                <li>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16"><path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/></svg>
+                    <div data-key="safety_rule1_html"><strong>Keep Your Information Private.</strong> Never share your full name, home address, school name, or phone number with strangers online.</div>
+                </li>
+                <li>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16"><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zM7 6.5C7 7.328 6.552 8 6 8s-1-.672-1-1.5S5.448 5 6 5s1 .672 1 1.5zM4.285 9.567a.5.5 0 0 1 .683.183A3.498 3.498 0 0 0 8 11.5a3.498 3.498 0 0 0 3.032-1.75.5.5 0 1 1 .866.5A4.498 4.498 0 0 1 8 12.5a4.498 4.498 0 0 1-3.898-2.25.5.5 0 0 1 .183-.683zM10 8c-.552 0-1-.672-1-1.5S9.448 5 10 5s1 .672 1 1.5S10.552 8 10 8z"/></svg>
+                    <div data-key="safety_rule2_html"><strong>Be Kind and Respectful.</strong> Treat others online the same way you would in real life. If you see someone being mean, don't join in.</div>
+                </li>
+                 <li>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16"><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/></svg>
+                    <div data-key="safety_rule3_html"><strong>Tell a Trusted Adult.</strong> If anything online makes you feel sad, scared, or uncomfortable, tell a parent, guardian, or teacher right away.</div>
+                </li>
+            </ul>
+        </div>
+        
+        <div id="typing" class="content-pane">
+            <h2 data-key="typing_title">Typing Practice</h2>
+            <p data-key="typing_intro">Let's improve your typing speed! Place your fingers on the home row (ASDF JKL;) and type the sentence below exactly as you see it.</p>
+            <div id="text-to-type">the quick brown fox jumps over the lazy dog</div>
+            <textarea id="typing-input" placeholder="Start typing here..."></textarea>
+            <button id="check-typing-btn" class="typing-btn" data-key="typing_check_btn">Check My Typing</button>
+            <div id="typing-result"></div>
+        </div>
+    </main>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    
+    // --- Tab Switching Logic ---
+    const tabs = document.querySelectorAll('.tab-btn');
+    const panes = document.querySelectorAll('.content-pane');
+    const showPane = (tabId) => {
+        panes.forEach(pane => pane.classList.remove('active'));
+        tabs.forEach(tab => tab.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        document.querySelector(`.tab-btn[data-tab="${tabId}"]`).classList.add('active');
+    };
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const tabId = tab.getAttribute('data-tab');
+            showPane(tabId);
+        });
+    });
+    const initialTab = window.location.hash.substring(1) || 'basics';
+    showPane(initialTab);
+    
+    // --- Mock Typing Test Logic ---
+    const checkTypingBtn = document.getElementById('check-typing-btn');
+    checkTypingBtn.addEventListener('click', () => {
+        const sourceText = document.getElementById('text-to-type').textContent;
+        const typedText = document.getElementById('typing-input').value;
+        const resultDiv = document.getElementById('typing-result');
+        let correctChars = 0;
+        for (let i = 0; i < sourceText.length; i++) {
+            if (typedText[i] === sourceText[i]) {
+                correctChars++;
+            }
+        }
+        const accuracy = Math.round((correctChars / sourceText.length) * 100) || 0;
+        const currentLang = languageSwitcher.value;
+        const resultMessage = currentLang === 'pa'
+            ? `ਬਹੁਤ ਵਧੀਆ! ਤੁਹਾਡੀ ਸ਼ੁੱਧਤਾ ${accuracy}% ਹੈ। ਅਭਿਆਸ ਕਰਦੇ ਰਹੋ!`
+            : `Great effort! Your accuracy is ${accuracy}%. Keep practicing!`;
+        resultDiv.textContent = resultMessage;
+    });
+
+    // --- Offline Toggle and Language Switcher ---
+    const offlineToggle = document.getElementById('offline-toggle');
+    const offlineBanner = document.getElementById('offline-banner');
+    offlineToggle.addEventListener('change', () => {
+        offlineBanner.style.display = offlineToggle.checked ? 'flex' : 'none';
+    });
+
+    const languageSwitcher = document.getElementById('language-switcher');
+    const translations = {
+        en: {
+            offline_banner_text: 'Offline Mode Active',
+            back_to_dashboard: '← Back to Dashboard',
+            tab_basics: 'Computer Basics',
+            tab_safety: 'Online Safety',
+            tab_typing: 'Typing Practice',
+            basics_title: 'Welcome to Computer Basics!',
+            basics_intro: "Let's learn about the main parts of a computer. Knowing these parts helps you use the computer better for learning and fun!",
+            basics_what_is_computer: 'What is a Computer?',
+            basics_what_is_computer_desc: 'A computer is an electronic machine that processes information. You can use it to write, draw, play games, find information, and much more.',
+            basics_monitor: 'The Monitor (Screen)',
+            basics_monitor_desc: 'The monitor is like a television screen. It shows you everything you are working on, like text, pictures, and videos.',
+            basics_keyboard: 'The Keyboard',
+            basics_keyboard_desc: "The keyboard has many buttons called 'keys'. You press these keys to type letters, numbers, and symbols onto the screen.",
+            basics_mouse: 'The Mouse',
+            basics_mouse_desc: 'The mouse is a small device you move with your hand. It moves a pointer (or cursor) on the screen to click on things and open programs.',
+            safety_title: 'Staying Safe Online',
+            safety_intro: "The internet is a wonderful place to learn and have fun, but it's important to be safe. Here are three golden rules to always remember!",
+            safety_rule1_html: '<strong>Keep Your Information Private.</strong> Never share your full name, home address, school name, or phone number with strangers online.',
+            safety_rule2_html: '<strong>Be Kind and Respectful.</strong> Treat others online the same way you would in real life. If you see someone being mean, don\'t join in.',
+            safety_rule3_html: '<strong>Tell a Trusted Adult.</strong> If anything online makes you feel sad, scared, or uncomfortable, tell a parent, guardian, or teacher right away.',
+            typing_title: 'Typing Practice',
+            typing_intro: "Let's improve your typing speed! Place your fingers on the home row (ASDF JKL;) and type the sentence below exactly as you see it.",
+            typing_check_btn: 'Check My Typing'
+        },
+        pa: {
+            offline_banner_text: 'ਔਫਲਾਈਨ ਮੋਡ ਚਾਲੂ ਹੈ',
+            back_to_dashboard: '← ਡੈਸ਼ਬੋਰਡ \'ਤੇ ਵਾਪਸ',
+            tab_basics: 'ਕੰਪਿਊਟਰ ਦੀ ਮੁੱਢਲੀ ਜਾਣਕਾਰੀ',
+            tab_safety: 'ਆਨਲਾਈਨ ਸੁਰੱਖਿਆ',
+            tab_typing: 'ਟਾਈਪਿੰਗ ਅਭਿਆਸ',
+            basics_title: 'ਕੰਪਿਊਟਰ ਦੀ ਮੁੱਢਲੀ ਜਾਣਕਾਰੀ ਵਿੱਚ ਤੁਹਾਡਾ ਸੁਆਗਤ ਹੈ!',
+            basics_intro: 'ਆਓ ਕੰਪਿਊਟਰ ਦੇ ਮੁੱਖ ਭਾਗਾਂ ਬਾਰੇ ਸਿੱਖੀਏ। ਇਹਨਾਂ ਭਾਗਾਂ ਨੂੰ ਜਾਣਨਾ ਤੁਹਾਨੂੰ ਸਿੱਖਣ ਅਤੇ ਮਨੋਰੰਜਨ ਲਈ ਕੰਪਿਊਟਰ ਦੀ ਬਿਹਤਰ ਵਰਤੋਂ ਕਰਨ ਵਿੱਚ ਮਦਦ ਕਰਦਾ ਹੈ!',
+            basics_what_is_computer: 'ਕੰਪਿਊਟਰ ਕੀ ਹੈ?',
+            basics_what_is_computer_desc: 'ਕੰਪਿਊਟਰ ਇੱਕ ਇਲੈਕਟ੍ਰਾਨਿਕ ਮਸ਼ੀਨ ਹੈ ਜੋ ਜਾਣਕਾਰੀ ਦੀ ਪ੍ਰਕਿਰਿਆ ਕਰਦੀ ਹੈ। ਤੁਸੀਂ ਇਸਦੀ ਵਰਤੋਂ ਲਿਖਣ, ਚਿੱਤਰ ਬਣਾਉਣ, ਗੇਮਾਂ ਖੇਡਣ, ਜਾਣਕਾਰੀ ਲੱਭਣ ਅਤੇ ਹੋਰ ਬਹੁਤ ਕੁਝ ਕਰਨ ਲਈ ਕਰ ਸਕਦੇ ਹੋ।',
+            basics_monitor: 'ਮਾਨੀਟਰ (ਸਕ੍ਰੀਨ)',
+            basics_monitor_desc: 'ਮਾਨੀਟਰ ਇੱਕ ਟੈਲੀਵਿਜ਼ਨ ਸਕ੍ਰੀਨ ਵਾਂਗ ਹੁੰਦਾ ਹੈ। ਇਹ ਤੁਹਾਨੂੰ ਉਹ ਸਭ ਕੁਝ ਦਿਖਾਉਂਦਾ ਹੈ ਜਿਸ \'ਤੇ ਤੁਸੀਂ ਕੰਮ ਕਰ ਰਹੇ ਹੋ, ਜਿਵੇਂ ਕਿ ਟੈਕਸਟ, ਤਸਵੀਰਾਂ ਅਤੇ ਵੀਡੀਓਜ਼।',
+            basics_keyboard: 'ਕੀ-ਬੋਰਡ',
+            basics_keyboard_desc: "ਕੀ-ਬੋਰਡ ਵਿੱਚ ਬਹੁਤ ਸਾਰੇ ਬਟਨ ਹੁੰਦੇ ਹਨ ਜਿਨ੍ਹਾਂ ਨੂੰ 'ਕੁੰਜੀਆਂ' ਕਿਹਾ ਜਾਂਦਾ ਹੈ। ਤੁਸੀਂ ਇਹਨਾਂ ਕੁੰਜੀਆਂ ਨੂੰ ਦਬਾ ਕੇ ਸਕ੍ਰੀਨ 'ਤੇ ਅੱਖਰ, ਨੰਬਰ ਅਤੇ ਚਿੰਨ੍ਹ ਟਾਈਪ ਕਰਦੇ ਹੋ।",
+            basics_mouse: 'ਮਾਊਸ',
+            basics_mouse_desc: 'ਮਾਊਸ ਇੱਕ ਛੋਟਾ ਯੰਤਰ ਹੈ ਜਿਸ ਨੂੰ ਤੁਸੀਂ ਆਪਣੇ ਹੱਥ ਨਾਲ ਹਿਲਾਉਂਦੇ ਹੋ। ਇਹ ਸਕ੍ਰੀਨ \'ਤੇ ਇੱਕ ਪੁਆਇੰਟਰ (ਜਾਂ ਕਰਸਰ) ਨੂੰ ਚੀਜ਼ਾਂ \'ਤੇ ਕਲਿੱਕ ਕਰਨ ਅਤੇ ਪ੍ਰੋਗਰਾਮ ਖੋਲ੍ਹਣ ਲਈ ਹਿਲਾਉਂਦਾ ਹੈ।',
+            safety_title: 'ਆਨਲਾਈਨ ਸੁਰੱਖਿਅਤ ਰਹਿਣਾ',
+            safety_intro: "ਇੰਟਰਨੈੱਟ ਸਿੱਖਣ ਅਤੇ ਮਨੋਰੰਜਨ ਲਈ ਇੱਕ ਸ਼ਾਨਦਾਰ ਜਗ੍ਹਾ ਹੈ, ਪਰ ਸੁਰੱਖਿਅਤ ਰਹਿਣਾ ਮਹੱਤਵਪੂਰਨ ਹੈ। ਇੱਥੇ ਤਿੰਨ ਸੁਨਹਿਰੀ ਨਿਯਮ ਹਨ ਜੋ ਹਮੇਸ਼ਾ ਯਾਦ ਰੱਖਣੇ ਚਾਹੀਦੇ ਹਨ!",
+            safety_rule1_html: '<strong>ਆਪਣੀ ਜਾਣਕਾਰੀ ਨੂੰ ਨਿੱਜੀ ਰੱਖੋ।</strong> ਆਪਣਾ ਪੂਰਾ ਨਾਮ, ਘਰ ਦਾ ਪਤਾ, ਸਕੂਲ ਦਾ ਨਾਮ, ਜਾਂ ਫ਼ੋਨ ਨੰਬਰ ਕਦੇ ਵੀ ਆਨਲਾਈਨ ਅਜਨਬੀਆਂ ਨਾਲ ਸਾਂਝਾ ਨਾ ਕਰੋ।',
+            safety_rule2_html: '<strong>ਦਿਆਲੂ ਅਤੇ ਸਤਿਕਾਰਯੋਗ ਬਣੋ।</strong> ਦੂਜਿਆਂ ਨਾਲ ਆਨਲਾਈਨ ਉਸੇ ਤਰ੍ਹਾਂ ਦਾ ਵਿਵਹਾਰ ਕਰੋ ਜਿਵੇਂ ਤੁਸੀਂ ਅਸਲ ਜ਼ਿੰਦਗੀ ਵਿੱਚ ਕਰਦੇ ਹੋ। ਜੇ ਤੁਸੀਂ ਕਿਸੇ ਨੂੰ ਬੁਰਾ ਵਿਵਹਾਰ ਕਰਦੇ ਦੇਖਦੇ ਹੋ, ਤਾਂ ਸ਼ਾਮਲ ਨਾ ਹੋਵੋ।',
+            safety_rule3_html: '<strong>ਕਿਸੇ ਭਰੋਸੇਮੰਦ ਬਾਲਗ ਨੂੰ ਦੱਸੋ।</strong> ਜੇਕਰ ਆਨਲਾਈਨ ਕੋਈ ਵੀ ਚੀਜ਼ ਤੁਹਾਨੂੰ ਉਦਾਸ, ਡਰਾਇਆ, ਜਾਂ ਬੇਚੈਨ ਮਹਿਸੂਸ ਕਰਵਾਉਂਦੀ ਹੈ, ਤਾਂ ਤੁਰੰਤ ਮਾਤਾ-ਪਿਤਾ, ਸਰਪ੍ਰਸਤ, ਜਾਂ ਅਧਿਆਪਕ ਨੂੰ ਦੱਸੋ।',
+            typing_title: 'ਟਾਈਪਿੰਗ ਅਭਿਆਸ',
+            typing_intro: "ਆਓ ਆਪਣੀ ਟਾਈਪਿੰਗ ਦੀ ਗਤੀ ਨੂੰ ਵਧਾਈਏ! ਆਪਣੀਆਂ ਉਂਗਲਾਂ ਨੂੰ ਹੋਮ ਰੋ (ASDF JKL;) 'ਤੇ ਰੱਖੋ ਅਤੇ ਹੇਠਾਂ ਦਿੱਤੇ ਵਾਕ ਨੂੰ ਬਿਲਕੁਲ ਉਸੇ ਤਰ੍ਹਾਂ ਟਾਈਪ ਕਰੋ ਜਿਵੇਂ ਤੁਸੀਂ ਇਸਨੂੰ ਦੇਖਦੇ ਹੋ।",
+            typing_check_btn: 'ਮੇਰੀ ਟਾਈਪਿੰਗ ਦੀ ਜਾਂਚ ਕਰੋ'
+        }
+    };
+    
+    const setLanguage = (language) => {
+        document.querySelectorAll('[data-key]').forEach(element => {
+            const key = element.getAttribute('data-key');
+            if (translations[language][key]) {
+                element.textContent = translations[language][key];
+            }
+        });
+        // Handle elements with HTML content
+        document.querySelectorAll('[data-key-html]').forEach(element => {
+            const key = element.getAttribute('data-key-html');
+            if (translations[language][key]) {
+                element.innerHTML = translations[language][key];
+            }
+        });
+        document.documentElement.lang = language === 'pa' ? 'pa-IN' : 'en-IN';
+    };
+
+    languageSwitcher.addEventListener('change', (event) => setLanguage(event.target.value));
+    setLanguage(languageSwitcher.value);
+});
+</script>
+
+</body>
+</html>

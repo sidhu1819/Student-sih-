@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en-IN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mathematics Lessons</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary-blue: #007bff; --secondary-green: #28a745; --light-bg: #f0f4f8; --white-card: #ffffff; --dark-text: #333; --light-text: #666; --header-purple: #667eea;}
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Nunito', sans-serif; background-color: var(--light-bg); color: var(--dark-text); }
+        .dashboard-container { max-width: 900px; margin: 0 auto; padding: 20px; }
+        .welcome-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 16px; margin-bottom: 30px; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1); }
+        .welcome-header-top { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        .header-controls { display: flex; align-items: center; flex-wrap: wrap; gap: 15px; }
+        #language-switcher { background-color: rgba(255, 255, 255, 0.2); color: white; border: 1px solid rgba(255, 255, 255, 0.3); padding: 8px 12px; border-radius: 25px; font-weight: 700; cursor: pointer; }
+        #language-switcher option { color: black; }
+        .header-link { background-color: rgba(255, 255, 255, 0.2); color: white; padding: 10px 20px; border-radius: 25px; text-decoration: none; font-weight: 700; }
+        
+        .tab-nav { display: flex; background-color: #e9ecef; border-radius: 12px; padding: 5px; margin-bottom: 30px; }
+        .tab-btn { flex: 1; padding: 15px; border: none; background-color: transparent; font-family: 'Nunito', sans-serif; font-size: 1.1rem; font-weight: 800; color: var(--light-text); cursor: pointer; transition: background-color 0.3s, color 0.3s; border-radius: 8px; }
+        .tab-btn.active { background-color: var(--white-card); color: var(--header-purple); box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); }
+        
+        .content-pane { display: none; animation: fadeIn 0.5s; }
+        .content-pane.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .lesson-container, .quiz-container { background-color: var(--white-card); padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); margin-bottom: 30px; }
+        .lesson-container h1 { font-size: 2.2rem; color: var(--primary-blue); margin-bottom: 20px; }
+        .lesson-container h2 { font-size: 1.6rem; color: var(--dark-text); margin-top: 25px; margin-bottom: 15px; }
+        .lesson-container p { font-size: 1.1rem; line-height: 1.7; margin-bottom: 15px; }
+        .lesson-container .example { background-color: var(--light-bg); padding: 15px; border-radius: 8px; margin: 15px 0; font-family: monospace; font-size: 1.2rem; }
+
+        .quiz-container h2 { font-size: 1.8rem; color: var(--secondary-green); margin-bottom: 20px; }
+        .quiz-question { margin-bottom: 20px; }
+        .quiz-question p { font-weight: 700; font-size: 1.1rem; margin-bottom: 10px; }
+        .quiz-options label { display: block; background-color: var(--light-bg); padding: 12px; border-radius: 8px; margin-bottom: 8px; cursor: pointer; transition: background-color 0.2s; }
+        .quiz-options label:hover { background-color: #e2e6ea; }
+        .quiz-options input { margin-right: 10px; }
+        .submit-quiz { display: inline-block; padding: 12px 30px; border: none; border-radius: 25px; background-color: var(--secondary-green); color: white; font-weight: 700; cursor: pointer; margin-top: 10px; }
+        .quiz-result { margin-top: 20px; font-weight: 700; font-size: 1.2rem; }
+        
+        /* --- CHATBOT STYLES --- */
+        #chat-fab { position: fixed; bottom: 25px; right: 25px; width: 60px; height: 60px; background: linear-gradient(45deg, #007bff, #0056b3); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); cursor: pointer; z-index: 1001; transition: transform 0.2s; }
+        #chat-fab:hover { transform: scale(1.1); }
+        #chat-fab svg { width: 32px; height: 32px; color: white; }
+        #chat-window { display: none; position: fixed; bottom: 100px; right: 25px; width: 350px; max-width: 90vw; height: 500px; max-height: 70vh; background-color: var(--white-card); border-radius: 16px; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15); z-index: 1000; display: none; flex-direction: column; overflow: hidden; }
+        #chat-window.active { display: flex; }
+        .chat-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px; font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
+        .chat-header-title { font-size: 1.1rem; }
+        #chat-close-btn { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
+        .chat-messages { flex-grow: 1; padding: 15px; overflow-y: auto; background-color: #f0f4f8; }
+        .chat-message { padding: 10px 15px; border-radius: 18px; margin-bottom: 10px; max-width: 80%; line-height: 1.4; }
+        .user-message { background-color: var(--primary-blue); color: white; align-self: flex-end; margin-left: auto; border-bottom-right-radius: 4px; }
+        .bot-message { background-color: #e9ecef; color: var(--dark-text); align-self: flex-start; border-bottom-left-radius: 4px; }
+        .chat-input-container { padding: 10px; border-top: 1px solid #eee; display: flex; gap: 10px; }
+        #chat-input { flex-grow: 1; border: 1px solid #ccc; border-radius: 20px; padding: 10px 15px; font-size: 1rem; font-family: 'Nunito', sans-serif; }
+        #chat-send-btn { border: none; background-color: var(--primary-blue); color: white; font-weight: 700; border-radius: 20px; padding: 10px 20px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="dashboard-container">
+    <header class="welcome-header">
+        <div class="welcome-header-top">
+            <a href="learning-journey.html#math" class="header-link" data-key="back_to_journey">← Back to Journey</a>
+            <div class="header-controls">
+                <select id="language-switcher">
+                    <option value="en">English</option>
+                    <option value="pa">ਪੰਜਾਬੀ</option>
+                </select>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="tab-nav">
+            <button class="tab-btn" data-tab="chapter1" data-key="tab_chap1">Chapter 1</button>
+            <button class="tab-btn" data-tab="chapter2" data-key="tab_chap2">Chapter 2</button>
+            <button class="tab-btn" data-tab="chapter3" data-key="tab_chap3">Chapter 3</button>
+            <button class="tab-btn" data-tab="chapter4" data-key="tab_chap4">Chapter 4</button>
+        </div>
+
+        <!-- Chapter 1 Pane -->
+        <div id="chapter1" class="content-pane">
+            <div class="lesson-container">
+                <h1 data-key="c1_title">Chapter 1: Numbers and Place Value</h1>
+                <p data-key="c1_p1">Place value is the value of each digit in a number. In <strong>523</strong>, the '5' is '5 hundreds' (500), the '2' is '2 tens' (20), and the '3' is '3 ones' (3).</p>
+                <h2 data-key="c1_subtitle">Understanding Thousands</h2>
+                <p data-key="c1_p2">When we have a four-digit number like <strong>4,876</strong>, the first digit represents the thousands place. So, the '4' stands for 4,000, the '8' for 800, the '7' for 70, and the '6' for 6.</p>
+                <div class="example" data-key="c1_example">Example: 4,876 = 4000 + 800 + 70 + 6</div>
+            </div>
+            <div class="quiz-container">
+                <h2 data-key="quiz_title">Test Your Knowledge</h2>
+                <div class="quiz-question">
+                    <p data-key="c1_q1_text">1. In the number 842, what is the place value of the digit 4?</p>
+                    <div class="quiz-options" id="q1-options">
+                        <label><input type="radio" name="c1_q1" value="4"> 4 (Ones)</label>
+                        <label><input type="radio" name="c1_q1" value="40"> 40 (Tens)</label>
+                        <label><input type="radio" name="c1_q1" value="400"> 400 (Hundreds)</label>
+                    </div>
+                </div>
+                <button class="submit-quiz" data-quiz="1" data-key="submit_btn">Submit</button>
+                <div class="quiz-result" id="quiz-result-1"></div>
+            </div>
+        </div>
+
+        <!-- Chapter 2 Pane -->
+        <div id="chapter2" class="content-pane">
+            <div class="lesson-container">
+                <h1 data-key="c2_title">Chapter 2: Addition</h1>
+                <p data-key="c2_p1">Addition is finding the total, or sum, by combining two or more numbers. For example, <strong>5 + 3 = 8</strong>.</p>
+                <h2 data-key="c2_subtitle">Adding with Carry-over</h2>
+                <p data-key="c2_p2">Sometimes when adding, a column adds up to 10 or more. For example, in <strong>27 + 15</strong>, the ones column (7 + 5) is 12. We write down the '2' and 'carry over' the '1' to the tens column. Then we add 1 + 2 + 1 to get 4 in the tens column. The answer is 42.</p>
+                <div class="example" data-key="c2_example">Example: 27 + 15 = 42</div>
+            </div>
+            <div class="quiz-container">
+                <h2 data-key="quiz_title">Test Your Knowledge</h2>
+                <div class="quiz-question">
+                    <p data-key="c2_q1_text">1. What is 38 + 14?</p>
+                    <div class="quiz-options" id="q2-options">
+                        <label><input type="radio" name="c2_q1" value="42"> 42</label>
+                        <label><input type="radio" name="c2_q1" value="52"> 52</label>
+                        <label><input type="radio" name="c2_q1" value="50"> 50</label>
+                    </div>
+                </div>
+                <button class="submit-quiz" data-quiz="2" data-key="submit_btn">Submit</button>
+                <div class="quiz-result" id="quiz-result-2"></div>
+            </div>
+        </div>
+
+        <!-- Chapter 3 Pane -->
+        <div id="chapter3" class="content-pane">
+            <div class="lesson-container">
+                <h1 data-key="c3_title">Chapter 3: Subtraction</h1>
+                <p data-key="c3_p1">Subtraction is taking one number away from another. For example, <strong>9 - 4 = 5</strong>.</p>
+                <h2 data-key="c3_subtitle">Subtraction with Borrowing</h2>
+                <p data-key="c3_p2">If the top digit in a column is smaller than the bottom digit, we need to 'borrow' from the next column to the left. In <strong>42 - 17</strong>, we can't take 7 from 2, so we borrow 1 ten from the '4', making it a '3'. The '2' becomes '12'. Now we can do 12 - 7 = 5 (ones place) and 3 - 1 = 2 (tens place). The answer is 25.</p>
+                <div class="example" data-key="c3_example">Example: 42 - 17 = 25</div>
+            </div>
+            <div class="quiz-container">
+                <h2 data-key="quiz_title">Test Your Knowledge</h2>
+                <div class="quiz-question">
+                    <p data-key="c3_q1_text">1. What is 51 - 23?</p>
+                    <div class="quiz-options" id="q3-options">
+                        <label><input type="radio" name="c3_q1" value="28"> 28</label>
+                        <label><input type="radio" name="c3_q1" value="38"> 38</label>
+                        <label><input type="radio" name="c3_q1" value="32"> 32</label>
+                    </div>
+                </div>
+                <button class="submit-quiz" data-quiz="3" data-key="submit_btn">Submit</button>
+                <div class="quiz-result" id="quiz-result-3"></div>
+            </div>
+        </div>
+
+        <!-- Chapter 4 Pane -->
+        <div id="chapter4" class="content-pane">
+            <div class="lesson-container">
+                <h1 data-key="c4_title">Chapter 4: Multiplication</h1>
+                <p data-key="c4_p1">Multiplication is repeated addition. For example, <strong>4 x 3</strong> is the same as <strong>4 + 4 + 4 = 12</strong>.</p>
+                <h2 data-key="c4_subtitle">Multiplying Two-Digit Numbers</h2>
+                <p data-key="c4_p2">To multiply <strong>14 x 5</strong>, first multiply the ones digit: 5 x 4 = 20. Write down '0' and carry over '2'. Then multiply the tens digit: 5 x 1 = 5. Add the carried over '2' to get 7. The final answer is 70.</p>
+                 <div class="example" data-key="c4_example">Example: 14 x 5 = 70</div>
+            </div>
+            <div class="quiz-container">
+                <h2 data-key="quiz_title">Test Your Knowledge</h2>
+                <div class="quiz-question">
+                    <p data-key="c4_q1_text">1. What is 16 x 3?</p>
+                    <div class="quiz-options" id="q4-options">
+                        <label><input type="radio" name="c4_q1" value="42"> 42</label>
+                        <label><input type="radio" name="c4_q1" value="38"> 38</label>
+                        <label><input type="radio" name="c4_q1" value="48"> 48</label>
+                    </div>
+                </div>
+                <button class="submit-quiz" data-quiz="4" data-key="submit_btn">Submit</button>
+                <div class="quiz-result" id="quiz-result-4"></div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- CHATBOT -->
+<div id="chat-fab">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8 15c4.418 0 8-3.134 8-7s-3.582-7-8-7-8 3.134-8 7c0 1.76.743 3.37 1.97 4.6-.097 1.016-.417 2.13-.771 2.966-.079.186.074.394.273.362 2.256-.37 3.597-.938 4.18-1.234A9.06 9.06 0 0 0 8 15z"/></svg>
+</div>
+<div id="chat-window">
+    <div class="chat-header">
+        <span class="chat-header-title" data-key="chatbot_title">Chat Help</span>
+        <button id="chat-close-btn">&times;</button>
+    </div>
+    <div class="chat-messages" id="chat-messages"></div>
+    <div class="chat-input-container">
+        <input type="text" id="chat-input" data-key-placeholder="chatbot_placeholder">
+        <button id="chat-send-btn" data-key="chatbot_send_btn">Send</button>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const languageSwitcher = document.getElementById('language-switcher');
+    const tabs = document.querySelectorAll('.tab-btn');
+    const panes = document.querySelectorAll('.content-pane');
+
+    const translations = {
+        en: {
+            back_to_journey: '← Back to Journey',
+            tab_chap1: 'Chapter 1', tab_chap2: 'Chapter 2', tab_chap3: 'Chapter 3', tab_chap4: 'Chapter 4',
+            quiz_title: 'Test Your Knowledge', submit_btn: 'Submit',
+            c1_title: 'Chapter 1: Numbers and Place Value', c1_p1: "Place value is the value of each digit in a number. In 523, the '5' is '5 hundreds' (500), the '2' is '2 tens' (20), and the '3' is '3 ones' (3).", c1_subtitle: "Understanding Thousands", c1_p2: "When we have a four-digit number like 4,876, the first digit represents the thousands place. So, the '4' stands for 4,000, the '8' for 800, the '7' for 70, and the '6' for 6.", c1_example: "Example: 4,876 = 4000 + 800 + 70 + 6", c1_q1_text: '1. In the number 842, what is the place value of the digit 4?',
+            c2_title: 'Chapter 2: Addition', c2_p1: 'Addition is finding the total, or sum, by combining two or more numbers. For example, 5 + 3 = 8.', c2_subtitle: 'Adding with Carry-over', c2_p2: "Sometimes when adding, a column adds up to 10 or more. For example, in 27 + 15, the ones column (7 + 5) is 12. We write down the '2' and 'carry over' the '1' to the tens column. Then we add 1 + 2 + 1 to get 4 in the tens column. The answer is 42.", c2_example: 'Example: 27 + 15 = 42', c2_q1_text: '1. What is 38 + 14?',
+            c3_title: 'Chapter 3: Subtraction', c3_p1: 'Subtraction is taking one number away from another. For example, 9 - 4 = 5.', c3_subtitle: 'Subtraction with Borrowing', c3_p2: "If the top digit in a column is smaller than the bottom digit, we need to 'borrow' from the next column to the left. In 42 - 17, we can't take 7 from 2, so we borrow 1 ten from the '4', making it a '3'. The '2' becomes '12'. Now we can do 12 - 7 = 5 (ones place) and 3 - 1 = 2 (tens place). The answer is 25.", c3_example: 'Example: 42 - 17 = 25', c3_q1_text: '1. What is 51 - 23?',
+            c4_title: 'Chapter 4: Multiplication', c4_p1: 'Multiplication is repeated addition. For example, 4 x 3 is the same as 4 + 4 + 4 = 12.', c4_subtitle: 'Multiplying Two-Digit Numbers', c4_p2: "To multiply 14 x 5, first multiply the ones digit: 5 x 4 = 20. Write down '0' and carry over '2'. Then multiply the tens digit: 5 x 1 = 5. Add the carried over '2' to get 7. The final answer is 70.", c4_example: 'Example: 14 x 5 = 70', c4_q1_text: '1. What is 16 x 3?',
+            chatbot_title: 'Chat Help', chatbot_placeholder: 'Type a message...', chatbot_send_btn: 'Send'
+        },
+        pa: {
+            back_to_journey: '← ਸਫ਼ਰ \'ਤੇ ਵਾਪਸ',
+            tab_chap1: 'ਅਧਿਆਇ 1', tab_chap2: 'ਅਧਿਆਇ 2', tab_chap3: 'ਅਧਿਆਇ 3', tab_chap4: 'ਅਧਿਆਇ 4',
+            quiz_title: 'ਆਪਣੇ ਗਿਆਨ ਦੀ ਜਾਂਚ ਕਰੋ', submit_btn: 'ਜਮ੍ਹਾਂ ਕਰੋ',
+            c1_title: 'ਅਧਿਆਇ 1: ਸੰਖਿਆਵਾਂ ਅਤੇ ਸਥਾਨਕ ਮੁੱਲ', c1_p1: "ਸਥਾਨਕ ਮੁੱਲ ਇੱਕ ਸੰਖਿਆ ਵਿੱਚ ਹਰੇਕ ਅੰਕ ਦਾ ਮੁੱਲ ਹੁੰਦਾ ਹੈ। 523 ਵਿੱਚ, '5' '5 ਸੈਂਕੜੇ' (500) ਹੈ, '2' '2 ਦਹਾਈਆਂ' (20) ਹੈ, ਅਤੇ '3' '3 ਇਕਾਈਆਂ' (3) ਹੈ।", c1_subtitle: "ਹਜ਼ਾਰਾਂ ਨੂੰ ਸਮਝਣਾ", c1_p2: "ਜਦੋਂ ਸਾਡੇ ਕੋਲ 4,876 ਵਰਗੀ ਚਾਰ-ਅੰਕਾਂ ਵਾਲੀ ਸੰਖਿਆ ਹੁੰਦੀ ਹੈ, ਤਾਂ ਪਹਿਲਾ ਅੰਕ ਹਜ਼ਾਰਾਂ ਦੇ ਸਥਾਨ ਨੂੰ ਦਰਸਾਉਂਦਾ ਹੈ। ਇਸ ਲਈ, '4' ਦਾ ਮਤਲਬ 4,000, '8' ਦਾ 800, '7' ਦਾ 70, ਅਤੇ '6' ਦਾ 6 ਹੈ।", c1_example: "ਉਦਾਹਰਣ: 4,876 = 4000 + 800 + 70 + 6", c1_q1_text: '1. 842 ਸੰਖਿਆ ਵਿੱਚ, 4 ਅੰਕ ਦਾ ਸਥਾਨਕ ਮੁੱਲ ਕੀ ਹੈ?',
+            c2_title: 'ਅਧਿਆਇ 2: ਜੋੜ', c2_p1: 'ਜੋੜ ਦੋ ਜਾਂ ਦੋ ਤੋਂ ਵੱਧ ਸੰਖਿਆਵਾਂ ਨੂੰ ਮਿਲਾ ਕੇ ਕੁੱਲ ਲੱਭਣਾ ਹੈ। ਉਦਾਹਰਣ ਵਜੋਂ, 5 + 3 = 8।', c2_subtitle: 'ਹਾਸਲ ਨਾਲ ਜੋੜਨਾ', c2_p2: "ਕਈ ਵਾਰ ਜੋੜਨ ਵੇਲੇ, ਇੱਕ ਕਾਲਮ ਦਾ ਜੋੜ 10 ਜਾਂ ਵੱਧ ਹੋ ਜਾਂਦਾ ਹੈ। ਉਦਾਹਰਣ ਵਜੋਂ, 27 + 15 ਵਿੱਚ, ਇਕਾਈਆਂ ਦਾ ਕਾਲਮ (7 + 5) 12 ਹੈ। ਅਸੀਂ '2' ਲਿਖਦੇ ਹਾਂ ਅਤੇ '1' ਨੂੰ ਦਹਾਈਆਂ ਦੇ ਕਾਲਮ ਵਿੱਚ 'ਹਾਸਲ' ਕਰਦੇ ਹਾਂ। ਫਿਰ ਅਸੀਂ 1 + 2 + 1 ਜੋੜਦੇ ਹਾਂ ਤਾਂ ਜੋ ਦਹਾਈਆਂ ਦੇ ਕਾਲਮ ਵਿੱਚ 4 ਪ੍ਰਾਪਤ ਹੋਵੇ। ਜਵਾਬ 42 ਹੈ।", c2_example: 'ਉਦਾਹਰਣ: 27 + 15 = 42', c2_q1_text: '1. 38 + 14 ਕਿੰਨਾ ਹੁੰਦਾ ਹੈ?',
+            c3_title: 'ਅਧਿਆਇ 3: ਘਟਾਓ', c3_p1: 'ਘਟਾਓ ਇੱਕ ਸੰਖਿਆ ਵਿੱਚੋਂ ਦੂਜੀ ਨੂੰ ਕੱਢਣਾ ਹੈ। ਉਦਾਹਰਣ ਵਜੋਂ, 9 - 4 = 5।', c3_subtitle: 'ਉਧਾਰ ਲੈ ਕੇ ਘਟਾਓ', c3_p2: "ਜੇਕਰ ਕਿਸੇ ਕਾਲਮ ਵਿੱਚ ਉੱਪਰਲਾ ਅੰਕ ਹੇਠਲੇ ਅੰਕ ਤੋਂ ਛੋਟਾ ਹੈ, ਤਾਂ ਸਾਨੂੰ ਖੱਬੇ ਪਾਸੇ ਦੇ ਅਗਲੇ ਕਾਲਮ ਤੋਂ 'ਉਧਾਰ' ਲੈਣ ਦੀ ਲੋੜ ਹੈ। 42 - 17 ਵਿੱਚ, ਅਸੀਂ 2 ਵਿੱਚੋਂ 7 ਨਹੀਂ ਕੱਢ ਸਕਦੇ, ਇਸ ਲਈ ਅਸੀਂ '4' ਤੋਂ 1 ਦਹਾਈ ਉਧਾਰ ਲੈਂਦੇ ਹਾਂ, ਜਿਸ ਨਾਲ ਇਹ '3' ਬਣ ਜਾਂਦਾ ਹੈ। '2' '12' ਬਣ ਜਾਂਦਾ ਹੈ। ਹੁਣ ਅਸੀਂ 12 - 7 = 5 (ਇਕਾਈਆਂ ਦਾ ਸਥਾਨ) ਅਤੇ 3 - 1 = 2 (ਦਹਾਈਆਂ ਦਾ ਸਥਾਨ) ਕਰ ਸਕਦੇ ਹਾਂ। ਜਵਾਬ 25 ਹੈ।", c3_example: 'ਉਦਾਹਰਣ: 42 - 17 = 25', c3_q1_text: '1. 51 - 23 ਕਿੰਨਾ ਹੁੰਦਾ ਹੈ?',
+            c4_title: 'ਅਧਿਆਇ 4: ਗੁਣਾ', c4_p1: 'ਗੁਣਾ ਵਾਰ-ਵਾਰ ਜੋੜਨਾ ਹੈ। ਉਦਾਹਰਣ ਵਜੋਂ, 4 x 3 ਦਾ ਮਤਲਬ 4 + 4 + 4 = 12 ਹੈ।', c4_subtitle: 'ਦੋ-ਅੰਕਾਂ ਵਾਲੀਆਂ ਸੰਖਿਆਵਾਂ ਨੂੰ ਗੁਣਾ ਕਰਨਾ', c4_p2: "14 x 5 ਨੂੰ ਗੁਣਾ ਕਰਨ ਲਈ, ਪਹਿਲਾਂ ਇਕਾਈਆਂ ਦੇ ਅੰਕ ਨੂੰ ਗੁਣਾ ਕਰੋ: 5 x 4 = 20। '0' ਲਿਖੋ ਅਤੇ '2' ਹਾਸਲ ਕਰੋ। ਫਿਰ ਦਹਾਈਆਂ ਦੇ ਅੰਕ ਨੂੰ ਗੁਣਾ ਕਰੋ: 5 x 1 = 5। ਹਾਸਲ ਕੀਤੇ '2' ਨੂੰ ਜੋੜ ਕੇ 7 ਪ੍ਰਾਪਤ ਕਰੋ। ਅੰਤਿਮ ਜਵਾਬ 70 ਹੈ।", c4_example: 'ਉਦਾਹਰਣ: 14 x 5 = 70', c4_q1_text: '1. 16 x 3 ਕਿੰਨਾ ਹੁੰਦਾ ਹੈ?',
+            chatbot_title: 'ਚੈਟ ਮਦਦ', chatbot_placeholder: 'ਇੱਕ ਸੁਨੇਹਾ ਟਾਈਪ ਕਰੋ...', chatbot_send_btn: 'ਭੇਜੋ'
+        }
+    };
+    const setLanguage = (language) => { 
+        document.querySelectorAll('[data-key]').forEach(element => { const key = element.getAttribute('data-key'); if (translations[language][key]) { element.textContent = translations[language][key]; } }); 
+        document.querySelectorAll('[data-key-placeholder]').forEach(element => { const key = element.getAttribute('data-key-placeholder'); if (translations[language][key]) { element.placeholder = translations[language][key]; } });
+        document.documentElement.lang = language === 'pa' ? 'pa-IN' : 'en-IN'; 
+    };
+    languageSwitcher.addEventListener('change', (event) => setLanguage(event.target.value));
+    
+    const showPane = (tabId) => {
+        panes.forEach(pane => pane.classList.remove('active'));
+        tabs.forEach(tab => tab.classList.remove('active'));
+        const paneToShow = document.getElementById(tabId);
+        if (paneToShow) {
+            paneToShow.classList.add('active');
+            document.querySelector(`.tab-btn[data-tab="${tabId}"]`).classList.add('active');
+        }
+    };
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const tabId = tab.getAttribute('data-tab');
+            window.location.hash = tabId;
+            showPane(tabId);
+        });
+    });
+    const initialTab = window.location.hash.substring(1) || 'chapter1';
+    showPane(initialTab);
+
+    // --- Quiz Logic ---
+    const quizAnswers = { '1': { 'c1_q1': '40' }, '2': { 'c2_q1': '52' }, '3': { 'c3_q1': '28' }, '4': { 'c4_q1': '48' } };
+    document.querySelectorAll('.submit-quiz').forEach(button => {
+        button.addEventListener('click', (event) => {
+            const quizNum = event.target.getAttribute('data-quiz');
+            const resultDiv = document.getElementById(`quiz-result-${quizNum}`);
+            const answers = quizAnswers[quizNum];
+            let score = 0;
+            let total = 0;
+            for (const question in answers) {
+                total++;
+                const selected = document.querySelector(`input[name="${question}"]:checked`);
+                if (selected && selected.value === answers[question]) {
+                    score++;
+                }
+            }
+            const lang = languageSwitcher.value;
+            resultDiv.textContent = lang === 'pa' ? `ਤੁਹਾਡਾ ਸਕੋਰ ਹੈ: ${total} ਵਿੱਚੋਂ ${score}` : `Your score is: ${score} out of ${total}`;
+        });
+    });
+
+    // --- CHATBOT SCRIPT ---
+    const chatFab = document.getElementById('chat-fab');
+    const chatWindow = document.getElementById('chat-window');
+    const chatCloseBtn = document.getElementById('chat-close-btn');
+    const chatMessages = document.getElementById('chat-messages');
+    const chatInput = document.getElementById('chat-input');
+    const chatSendBtn = document.getElementById('chat-send-btn');
+    const chatBotData = { en: { default: "Sorry, I don't understand. You can ask me how to go back to the journey page.", greeting: "Hello! I can help you with questions about this lesson page.", responses: { 'journey back': "To go back to the Learning Journey page, click the '← Back to Journey' link at the top of the page.", 'language punjabi english': "Use the language switcher dropdown menu at the top-right of the page to switch between English and Punjabi." } }, pa: { default: "ਮਾਫ਼ ਕਰਨਾ, ਮੈਨੂੰ ਸਮਝ ਨਹੀਂ ਆਇਆ। ਤੁਸੀਂ ਮੈਨੂੰ ਪੁੱਛ ਸਕਦੇ ਹੋ ਕਿ ਸਫ਼ਰ ਪੰਨੇ 'ਤੇ ਵਾਪਸ ਕਿਵੇਂ ਜਾਣਾ ਹੈ।", greeting: "ਸਤਿ ਸ਼੍ਰੀ ਅਕਾਲ! ਮੈਂ ਇਸ ਪਾਠ ਪੰਨੇ ਬਾਰੇ ਸਵਾਲਾਂ ਵਿੱਚ ਤੁਹਾਡੀ ਮਦਦ ਕਰ ਸਕਦਾ ਹਾਂ।", responses: { 'ਸਫ਼ਰ ਵਾਪਸ': "ਲਰਨਿੰਗ ਜਰਨੀ ਪੰਨੇ 'ਤੇ ਵਾਪਸ ਜਾਣ ਲਈ, ਪੰਨੇ ਦੇ ਸਿਖਰ 'ਤੇ '← ਸਫ਼ਰ \'ਤੇ ਵਾਪਸ' ਲਿੰਕ 'ਤੇ ਕਲਿੱਕ ਕਰੋ।", 'ਭਾਸ਼ਾ ਪੰਜਾਬੀ ਅੰਗਰੇਜ਼ੀ': "ਅੰਗਰੇਜ਼ੀ ਅਤੇ ਪੰਜਾਬੀ ਵਿੱਚ ਬਦਲਣ ਲਈ ਪੰਨੇ ਦੇ ਉੱਪਰ-ਸੱਜੇ ਪਾਸੇ ਭਾਸ਼ਾ ਸਵਿੱਚਰ ਡ੍ਰੌਪਡਾਉਨ ਮੀਨੂ ਦੀ ਵਰਤੋਂ ਕਰੋ।" } } };
+    const toggleChatWindow = () => { chatWindow.classList.toggle('active'); if (chatWindow.classList.contains('active')) { addMessageToChat('bot', chatBotData[languageSwitcher.value].greeting); } else { chatMessages.innerHTML = ''; } };
+    const addMessageToChat = (sender, message) => { const messageElement = document.createElement('div'); messageElement.classList.add('chat-message', sender === 'user' ? 'user-message' : 'bot-message'); messageElement.textContent = message; chatMessages.appendChild(messageElement); chatMessages.scrollTop = chatMessages.scrollHeight; };
+    const getBotResponse = (userInput) => { const lang = languageSwitcher.value; const lowerInput = userInput.toLowerCase(); const responses = chatBotData[lang].responses; for (const keywords in responses) { const keywordArray = keywords.split(' '); if (keywordArray.some(keyword => lowerInput.includes(keyword))) { return responses[keywords]; } } return chatBotData[lang].default; };
+    const handleSendMessage = () => { const userInput = chatInput.value.trim(); if (userInput === '') return; addMessageToChat('user', userInput); chatInput.value = ''; setTimeout(() => { const botResponse = getBotResponse(userInput); addMessageToChat('bot', botResponse); }, 500); };
+    chatFab.addEventListener('click', toggleChatWindow);
+    chatCloseBtn.addEventListener('click', toggleChatWindow);
+    chatSendBtn.addEventListener('click', handleSendMessage);
+    chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') { handleSendMessage(); } });
+
+    setLanguage(languageSwitcher.value);
+});
+</script>
+
+</body>
+</html>
+

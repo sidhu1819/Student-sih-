@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en-IN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-blue: #007bff;
+            --secondary-green: #28a745;
+            --light-bg: #f0f4f8;
+            --white-card: #ffffff;
+            --dark-text: #333;
+            --light-text: #666;
+            --alert-yellow: #ffc107;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: var(--light-bg);
+            color: var(--dark-text);
+        }
+        #offline-banner {
+            display: none; 
+            background-color: #ffc107;
+            color: #333;
+            text-align: center;
+            padding: 10px;
+            font-weight: 700;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .offline-toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white; 
+        }
+        .offline-toggle-container span {
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+        .switch {
+            position: relative; display: inline-block;
+            width: 50px; height: 28px;
+        }
+        .switch input { display: none; }
+        .slider {
+            position: absolute; cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 28px;
+        }
+        .slider:before {
+            position: absolute; content: "";
+            height: 20px; width: 20px;
+            left: 4px; bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider { background-color: var(--secondary-green); }
+        input:checked + .slider:before { transform: translateX(22px); }
+        .dashboard-container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .welcome-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; padding: 25px; border-radius: 16px; margin-bottom: 30px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+        .welcome-header-top {
+            display: flex; justify-content: space-between; align-items: flex-start;
+            flex-wrap: wrap; gap: 15px; margin-bottom: 20px;
+        }
+        .welcome-header h1 { font-size: 2rem; font-weight: 800; }
+        .welcome-header p { font-size: 1.1rem; opacity: 0.9; }
+        .header-controls { display: flex; align-items: center; flex-wrap: wrap; gap: 15px; }
+        #language-switcher {
+            background-color: rgba(255, 255, 255, 0.2); color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3); padding: 8px 12px;
+            border-radius: 25px; font-family: 'Nunito', sans-serif; font-weight: 700; cursor: pointer;
+        }
+        #language-switcher option { color: black; }
+        .logout-btn {
+            background-color: rgba(255, 255, 255, 0.2); color: white; padding: 10px 20px;
+            border-radius: 25px; text-decoration: none; font-weight: 700;
+            transition: background-color 0.2s; white-space: nowrap;
+        }
+        .logout-btn:hover { background-color: rgba(255, 255, 255, 0.3); }
+        .progress-bar-container { background-color: rgba(0, 0, 0, 0.2); border-radius: 25px; padding: 4px; }
+        .progress-bar { width: 45%; height: 12px; background: linear-gradient(to right, #ffd200, #f7971e); border-radius: 25px; }
+        .progress-label { font-size: 0.9rem; margin-top: 8px; font-weight: 700; }
+        .section-title { font-size: 1.8rem; font-weight: 800; color: var(--dark-text); margin-bottom: 20px; padding-bottom: 10px; border-bottom: 3px solid var(--primary-blue); }
+        .card-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; margin-bottom: 40px; }
+        .card { background-color: var(--white-card); border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); padding: 25px; transition: transform 0.2s, box-shadow 0.2s; display: flex; flex-direction: column; }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1); }
+        .card h3 { font-size: 1.4rem; color: var(--primary-blue); margin-bottom: 10px; display: flex; align-items: center; }
+        .card h3 svg { margin-right: 10px; }
+        .card p { color: var(--light-text); margin-bottom: 20px; flex-grow: 1; }
+        .card .btn { display: block; background: linear-gradient(45deg, var(--primary-blue), #0056b3); color: white; padding: 12px 20px; border-radius: 8px; text-decoration: none; font-weight: 700; text-align: center; margin-top: auto; }
+        .card .btn:disabled { background: #adb5bd; cursor: not-allowed; }
+        .card .btn.literacy { background: linear-gradient(45deg, #fd7e14, #ffb900); }
+        .card .btn.library { background: linear-gradient(45deg, #4e54c8, #8f94fb); }
+        
+        /* --- NOTIFICATION STYLES --- */
+        .notification-card {
+            border-left: 5px solid var(--primary-blue);
+            cursor: pointer;
+        }
+        .notification-card.alert {
+            border-left-color: var(--alert-yellow);
+        }
+        .notification-card h3 {
+            font-size: 1.2rem;
+            color: var(--dark-text);
+        }
+        .notification-card p {
+            font-size: 0.95rem;
+        }
+        .notification-card .timestamp {
+            font-size: 0.8rem;
+            color: var(--light-text);
+            margin-top: 15px;
+            text-align: right;
+        }
+
+        /* --- CHATBOT STYLES --- */
+        #chat-fab { position: fixed; bottom: 25px; right: 25px; width: 60px; height: 60px; background: linear-gradient(45deg, #007bff, #0056b3); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); cursor: pointer; z-index: 1001; transition: transform 0.2s; }
+        #chat-fab:hover { transform: scale(1.1); }
+        #chat-fab svg { width: 32px; height: 32px; color: white; }
+        #chat-window { display: none; position: fixed; bottom: 100px; right: 25px; width: 350px; max-width: 90vw; height: 500px; max-height: 70vh; background-color: var(--white-card); border-radius: 16px; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15); z-index: 1000; display: none; flex-direction: column; overflow: hidden; }
+        #chat-window.active { display: flex; }
+        .chat-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px; font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
+        .chat-header-title { font-size: 1.1rem; }
+        #chat-close-btn { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
+        .chat-messages { flex-grow: 1; padding: 15px; overflow-y: auto; background-color: #f0f4f8; }
+        .chat-message { padding: 10px 15px; border-radius: 18px; margin-bottom: 10px; max-width: 80%; line-height: 1.4; }
+        .user-message { background-color: var(--primary-blue); color: white; align-self: flex-end; margin-left: auto; border-bottom-right-radius: 4px; }
+        .bot-message { background-color: #e9ecef; color: var(--dark-text); align-self: flex-start; border-bottom-left-radius: 4px; }
+        .chat-input-container { padding: 10px; border-top: 1px solid #eee; display: flex; gap: 10px; }
+        #chat-input { flex-grow: 1; border: 1px solid #ccc; border-radius: 20px; padding: 10px 15px; font-size: 1rem; font-family: 'Nunito', sans-serif; }
+        #chat-send-btn { border: none; background-color: var(--primary-blue); color: white; font-weight: 700; border-radius: 20px; padding: 10px 20px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div id="offline-banner">
+    <span data-key="offline_banner_text">Offline Mode Active</span>
+</div>
+
+<div class="dashboard-container">
+    <header class="welcome-header">
+        <div class="welcome-header-top">
+            <div>
+                <h1 data-key="greeting">Hello, Gurpreet!</h1>
+                <p data-key="welcome_message">Ready to learn something new today?</p>
+            </div>
+            <div class="header-controls">
+                <div class="offline-toggle-container">
+                    <span data-key="offline_mode_label">Offline Mode</span>
+                    <label class="switch">
+                        <input type="checkbox" id="offline-toggle">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <select id="language-switcher">
+                    <option value="en">English</option>
+                    <option value="pa">ਪੰਜਾਬੀ</option>
+                </select>
+                <a href="login.html" class="logout-btn" data-key="logout_btn">Logout</a>
+            </div>
+        </div>
+        <div>
+            <p class="progress-label" data-key="overall_progress">Your Overall Progress</p>
+            <div class="progress-bar-container">
+                <div class="progress-bar"></div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section>
+            <h2 class="section-title" data-key="notifications_title">Notifications</h2>
+            <div class="card-container">
+                <div class="card notification-card">
+                    <h3 data-key="new_assignment_title">New Assignment Posted</h3>
+                    <p data-key="new_assignment_desc">Your Mathematics teacher has posted a new assignment on Chapter 3: Multiplication. Due October 5th.</p>
+                    <div class="timestamp">2 hours ago</div>
+                </div>
+                <div class="card notification-card alert">
+                    <h3 data-key="meeting_notice_title">Parent-Teacher Meeting</h3>
+                    <p data-key="meeting_notice_desc">A parent-teacher meeting is scheduled for this Friday, October 3rd, at 11:00 AM.</p>
+                    <div class="timestamp">1 day ago</div>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2 class="section-title" data-key="learning_journey_title">My Learning Journey</h2>
+            <div class="card-container">
+                <div class="card">
+                    <h3 data-key="math_title"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>Mathematics</h3>
+                    <p data-key="math_desc">Learn about multiplication and division. You are on Chapter 3/10.</p>
+                    <a href="learning-journey.html#math" class="btn" data-key="continue_lesson_btn">Continue Lesson</a>
+                </div>
+                <div class="card">
+                    <h3 data-key="english_title"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><line x1="10" y1="9" x2="8" y2="9"></line></svg>English</h3>
+                    <p data-key="english_desc">Practice nouns and pronouns. You have completed Chapter 2/8.</p>
+                    <a href="learning-journey.html#english" class="btn online-only" data-key="new_chapter_btn">Start New Chapter</a>
+                </div>
+                <div class="card">
+                    <h3 data-key="science_title"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>Science</h3>
+                    <p data-key="science_desc">Explore the world of plants. You are on Chapter 4/12.</p>
+                    <a href="learning-journey.html#science" class="btn online-only" data-key="continue_lesson_btn">Continue Lesson</a>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2 class="section-title" data-key="literacy_hub_title">Digital Literacy Hub</h2>
+            <div class="card-container">
+                <div class="card">
+                    <h3 data-key="computer_basics_title">Computer Basics</h3>
+                    <p data-key="computer_basics_desc">Learn about the parts of a computer and how to use the mouse.</p>
+                    <a href="digital-literacy.html#basics" class="btn literacy" data-key="start_module_btn">Start Module</a>
+                </div>
+                <div class="card">
+                    <h3 data-key="online_safety_title">Staying Safe Online</h3>
+                    <p data-key="online_safety_desc">Important tips for using the internet safely and responsibly.</p>
+                    <a href="digital-literacy.html#safety" class="btn literacy online-only" data-key="start_module_btn">Start Module</a>
+                </div>
+                <div class="card">
+                    <h3 data-key="typing_practice_title">Typing Practice</h3>
+                    <p data-key="typing_practice_desc">Improve your typing skills with fun and easy exercises.</p>
+                    <a href="digital-literacy.html#typing" class="btn literacy" data-key="start_practice_btn">Start Practice</a>
+                </div>
+            </div>
+        </section>
+            
+        <section>
+            <h2 class="section-title" data-key="library_title">Library</h2>
+            <div class="card-container">
+                <div class="card">
+                    <h3 data-key="story_books_title">Story Books</h3>
+                    <p data-key="story_books_desc">A collection of folk tales from Punjab.</p>
+                    <a href="library.html#stories" class="btn library" data-key="read_now_btn">Read Now</a>
+                </div>
+                <div class="card">
+                    <h3 data-key="science_nature_title">Science & Nature</h3>
+                    <p data-key="science_nature_desc">Discover amazing facts about animals and our planet.</p>
+                    <a href="library.html#science" class="btn library" data-key="open_book_btn">Open Book</a>
+                </div>
+                <div class="card">
+                    <h3 data-key="history_culture_title">History & Culture</h3>
+                    <p data-key="history_culture_desc">Learn about the rich history and culture of Punjab.</p>
+                    <a href="library.html#history" class="btn library" data-key="read_now_btn">Read Now</a>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+
+<div id="chat-fab">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+        <path d="M8 15c4.418 0 8-3.134 8-7s-3.582-7-8-7-8 3.134-8 7c0 1.76.743 3.37 1.97 4.6-.097 1.016-.417 2.13-.771 2.966-.079.186.074.394.273.362 2.256-.37 3.597-.938 4.18-1.234A9.06 9.06 0 0 0 8 15z"/>
+    </svg>
+</div>
+<div id="chat-window">
+    <div class="chat-header">
+        <span class="chat-header-title" data-key="chatbot_title">Chat Help</span>
+        <button id="chat-close-btn">&times;</button>
+    </div>
+    <div class="chat-messages" id="chat-messages"></div>
+    <div class="chat-input-container">
+        <input type="text" id="chat-input" data-key-placeholder="chatbot_placeholder">
+        <button id="chat-send-btn" data-key="chatbot_send_btn">Send</button>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const languageSwitcher = document.getElementById('language-switcher');
+    const offlineToggle = document.getElementById('offline-toggle');
+    const offlineBanner = document.getElementById('offline-banner');
+    const onlineOnlyButtons = document.querySelectorAll('.online-only');
+
+    const translations = {
+        en: {
+            offline_banner_text: 'Offline Mode Active',
+            offline_mode_label: 'Offline Mode',
+            greeting: 'Hello, Gurpreet!',
+            welcome_message: 'Ready to learn something new today?',
+            logout_btn: 'Logout',
+            overall_progress: 'Your Overall Progress',
+            notifications_title: 'Notifications',
+            new_assignment_title: 'New Assignment Posted',
+            new_assignment_desc: 'Your Mathematics teacher has posted a new assignment on Chapter 3: Multiplication. Due October 5th.',
+            meeting_notice_title: 'Parent-Teacher Meeting',
+            meeting_notice_desc: 'A parent-teacher meeting is scheduled for this Friday, October 3rd, at 11:00 AM.',
+            learning_journey_title: 'My Learning Journey',
+            math_title: 'Mathematics',
+            math_desc: 'Learn about multiplication and division. You are on Chapter 3/10.',
+            continue_lesson_btn: 'Continue Lesson',
+            english_title: 'English',
+            english_desc: 'Practice nouns and pronouns. You have completed Chapter 2/8.',
+            new_chapter_btn: 'Start New Chapter',
+            science_title: 'Science',
+            science_desc: 'Explore the world of plants. You are on Chapter 4/12.',
+            literacy_hub_title: 'Digital Literacy Hub',
+            computer_basics_title: 'Computer Basics',
+            computer_basics_desc: 'Learn about the parts of a computer and how to use the mouse.',
+            start_module_btn: 'Start Module',
+            online_safety_title: 'Staying Safe Online',
+            online_safety_desc: 'Important tips for using the internet safely and responsibly.',
+            typing_practice_title: 'Typing Practice',
+            typing_practice_desc: 'Improve your typing skills with fun and easy exercises.',
+            start_practice_btn: 'Start Practice',
+            library_title: 'Library',
+            story_books_title: 'Story Books',
+            story_books_desc: 'A collection of folk tales from Punjab.',
+            read_now_btn: 'Read Now',
+            science_nature_title: 'Science & Nature',
+            science_nature_desc: 'Discover amazing facts about animals and our planet.',
+            open_book_btn: 'Open Book',
+            history_culture_title: 'History & Culture',
+            history_culture_desc: 'Learn about the rich history and culture of Punjab.',
+            chatbot_title: 'Chat Help',
+            chatbot_placeholder: 'Type a message...',
+            chatbot_send_btn: 'Send'
+        },
+        pa: {
+            offline_banner_text: 'ਔਫਲਾਈਨ ਮੋਡ ਚਾਲੂ ਹੈ',
+            offline_mode_label: 'ਔਫਲਾਈਨ ਮੋਡ',
+            greeting: 'ਸਤਿ ਸ਼੍ਰੀ ਅਕਾਲ, ਗੁਰਪ੍ਰੀਤ!',
+            welcome_message: 'ਅੱਜ ਕੁਝ ਨਵਾਂ ਸਿੱਖਣ ਲਈ ਤਿਆਰ ਹੋ?',
+            logout_btn: 'ਲੌਗ ਆਊਟ',
+            overall_progress: 'ਤੁਹਾਡੀ ਸਮੁੱਚੀ ਪ੍ਰਗਤੀ',
+            notifications_title: 'ਸੂਚਨਾਵਾਂ',
+            new_assignment_title: 'ਨਵੀਂ ਅਸਾਈਨਮੈਂਟ ਪੋਸਟ ਕੀਤੀ ਗਈ',
+            new_assignment_desc: 'ਤੁਹਾਡੇ ਗਣਿਤ ਦੇ ਅਧਿਆਪਕ ਨੇ ਅਧਿਆਇ 3: ਗੁਣਾ \'ਤੇ ਇੱਕ ਨਵੀਂ ਅਸਾਈਨਮੈਂਟ ਪੋਸਟ ਕੀਤੀ ਹੈ। 5 ਅਕਤੂਬਰ ਨੂੰ ਹੋਣ ਵਾਲੀ ਹੈ।',
+            meeting_notice_title: 'ਮਾਪੇ-ਅਧਿਆਪਕ ਮੀਟਿੰਗ',
+            meeting_notice_desc: 'ਇਸ ਸ਼ੁੱਕਰਵਾਰ, 3 ਅਕਤੂਬਰ, ਸਵੇਰੇ 11:00 ਵਜੇ ਮਾਪੇ-ਅਧਿਆਪਕ ਮੀਟਿੰਗ ਤਹਿ ਕੀਤੀ ਗਈ ਹੈ।',
+            learning_journey_title: 'ਮੇਰਾ ਸਿੱਖਣ ਦਾ ਸਫ਼ਰ',
+            math_title: 'ਗਣਿਤ',
+            math_desc: 'ਗੁਣਾ ਅਤੇ ਭਾਗ ਬਾਰੇ ਸਿੱਖੋ। ਤੁਸੀਂ ਅਧਿਆਇ 3/10 \'ਤੇ ਹੋ।',
+            continue_lesson_btn: 'ਪਾਠ ਜਾਰੀ ਰੱਖੋ',
+            english_title: 'ਅੰਗਰੇਜ਼ੀ',
+            english_desc: 'ਨਾਂਵ ਅਤੇ ਪੜਨਾਂਵ ਦਾ ਅਭਿਆਸ ਕਰੋ। ਤੁਸੀਂ ਅਧਿਆਇ 2/8 ਪੂਰਾ ਕਰ ਲਿਆ ਹੈ।',
+            new_chapter_btn: 'ਨਵਾਂ ਅਧਿਆਇ ਸ਼ੁਰੂ ਕਰੋ',
+            science_title: 'ਵਿਗਿਆਨ',
+            science_desc: 'ਪੌਦਿਆਂ ਦੀ ਦੁਨੀਆਂ ਦੀ ਪੜਚੋਲ ਕਰੋ। ਤੁਸੀਂ ਅਧਿਆਇ 4/12 \'ਤੇ ਹੋ।',
+            literacy_hub_title: 'ਡਿਜੀਟਲ ਸਾਖਰਤਾ ਕੇਂਦਰ',
+            computer_basics_title: 'ਕੰਪਿਊਟਰ ਦੀ ਮੁੱਢਲੀ ਜਾਣਕਾਰੀ',
+            computer_basics_desc: 'ਕੰਪਿਊਟਰ ਦੇ ਹਿੱਸਿਆਂ ਅਤੇ ਮਾਊਸ ਦੀ ਵਰਤੋਂ ਬਾਰੇ ਸਿੱਖੋ।',
+            start_module_btn: 'ਮੋਡੀਊਲ ਸ਼ੁਰੂ ਕਰੋ',
+            online_safety_title: 'ਆਨਲਾਈਨ ਸੁਰੱਖਿਅਤ ਰਹਿਣਾ',
+            online_safety_desc: 'ਇੰਟਰਨੈੱਟ ਦੀ ਸੁਰੱਖਿਅਤ ਅਤੇ ਜ਼ਿੰਮੇਵਾਰੀ ਨਾਲ ਵਰਤੋਂ ਲਈ ਮਹੱਤਵਪੂਰਨ ਸੁਝਾਅ।',
+            typing_practice_title: 'ਟਾਈਪਿੰਗ ਅਭਿਆਸ',
+            typing_practice_desc: 'ਮਜ਼ੇਦਾਰ ਅਤੇ ਆਸਾਨ ਅਭਿਆਸਾਂ ਨਾਲ ਆਪਣੀ ਟਾਈਪਿੰਗ ਦੇ ਹੁਨਰ ਨੂੰ ਸੁਧਾਰੋ।',
+            start_practice_btn: 'ਅਭਿਆਸ ਸ਼ੁਰੂ ਕਰੋ',
+            library_title: 'ਲਾਇਬ੍ਰੇਰੀ',
+            story_books_title: 'ਕਹਾਣੀਆਂ ਦੀਆਂ ਕਿਤਾਬਾਂ',
+            story_books_desc: 'ਪੰਜਾਬ ਦੀਆਂ ਲੋਕ ਕਹਾਣੀਆਂ ਦਾ ਸੰਗ੍ਰਹਿ।',
+            read_now_btn: 'ਹੁਣੇ ਪੜ੍ਹੋ',
+            science_nature_title: 'ਵਿਗਿਆਨ ਅਤੇ ਕੁਦਰਤ',
+            science_nature_desc: 'ਜਾਨਵਰਾਂ ਅਤੇ ਸਾਡੇ ਗ੍ਰਹਿ ਬਾਰੇ ਹੈਰਾਨੀਜਨਕ ਤੱਥਾਂ ਦੀ ਖੋਜ ਕਰੋ।',
+            open_book_btn: 'ਕਿਤਾਬ ਖੋਲ੍ਹੋ',
+            history_culture_title: 'ਇਤਿਹਾਸ ਅਤੇ ਸਭਿਆਚਾਰ',
+            history_culture_desc: 'ਪੰਜਾਬ ਦੇ ਅਮੀਰ ਇਤਿਹਾਸ ਅਤੇ ਸਭਿਆਚਾਰ ਬਾਰੇ ਜਾਣੋ।',
+            chatbot_title: 'ਚੈਟ ਮਦਦ',
+            chatbot_placeholder: 'ਇੱਕ ਸੁਨੇਹਾ ਟਾਈਪ ਕਰੋ...',
+            chatbot_send_btn: 'ਭੇਜੋ'
+        }
+    };
+    
+    const setLanguage = (language) => {
+        document.querySelectorAll('[data-key]').forEach(element => {
+            const key = element.getAttribute('data-key');
+            if (translations[language][key]) {
+                element.textContent = translations[language][key];
+            }
+        });
+        document.querySelectorAll('[data-key-placeholder]').forEach(element => {
+            const key = element.getAttribute('data-key-placeholder');
+            if (translations[language][key]) {
+                element.placeholder = translations[language][key];
+            }
+        });
+        document.documentElement.lang = language === 'pa' ? 'pa-IN' : 'en-IN';
+    };
+
+    languageSwitcher.addEventListener('change', (event) => setLanguage(event.target.value));
+    offlineToggle.addEventListener('change', () => {
+        offlineBanner.style.display = offlineToggle.checked ? 'flex' : 'none';
+        onlineOnlyButtons.forEach(button => { button.disabled = offlineToggle.checked; });
+    });
+    setLanguage(languageSwitcher.value);
+    
+    // --- CHATBOT SCRIPT ---
+    const chatFab = document.getElementById('chat-fab');
+    const chatWindow = document.getElementById('chat-window');
+    const chatCloseBtn = document.getElementById('chat-close-btn');
+    const chatMessages = document.getElementById('chat-messages');
+    const chatInput = document.getElementById('chat-input');
+    const chatSendBtn = document.getElementById('chat-send-btn');
+    const chatBotData = { en: { default: "Sorry, I don't understand. Can you ask about navigating the website, like 'how to see math progress' or 'where can I practice typing'?", greeting: "Hello! I am your assistant. How can I help you navigate the platform today?", responses: { 'math progress journey': "To see your Math progress, go to the Student Dashboard and click the 'Continue Lesson' button on the Mathematics card.", 'english progress journey': "To see your English progress, go to the Student Dashboard and click the button on the English card.", 'science progress journey': "To see your Science progress, go to the Student Dashboard and click the button on the Science card.", 'story books read library': "You can find story books in the Library section on your dashboard. Click the 'Read Now' button under 'Story Books'.", 'typing practice keyboard': "Go to the 'Digital Literacy Hub' from your dashboard. Inside, you can find the 'Typing Practice' module.", 'safe safety internet online': "The 'Digital Literacy Hub' has a section on 'Staying Safe Online'. You can access it from the student dashboard.", 'add new assignment upload': "On the Teacher Dashboard, you can find the 'Add New Assignment' form. Fill in the details and click 'Upload Assignment'.", 'student progress see students track': "The 'Student Progress' table on your dashboard shows the name, overall progress, and last active time for each student.", 'offline internet': "You can use the 'Offline Mode' toggle switch at the top of the page. When active, some online-only features might be disabled.", 'language punjabi english': "Use the language switcher dropdown menu at the top-right of the page to switch between English and Punjabi." } }, pa: { default: "ਮਾਫ਼ ਕਰਨਾ, ਮੈਨੂੰ ਸਮਝ ਨਹੀਂ ਆਇਆ। ਕੀ ਤੁਸੀਂ ਵੈੱਬਸਾਈਟ ਨੈਵੀਗੇਟ ਕਰਨ ਬਾਰੇ ਪੁੱਛ ਸਕਦੇ ਹੋ, ਜਿਵੇਂ ਕਿ 'ਗਣਿਤ ਦੀ ਪ੍ਰਗਤੀ ਕਿਵੇਂ ਵੇਖਣੀ ਹੈ' ਜਾਂ 'ਮੈਂ ਟਾਈਪਿੰਗ ਦਾ ਅਭਿਆਸ ਕਿੱਥੇ ਕਰ ਸਕਦਾ ਹਾਂ'?", greeting: "ਸਤਿ ਸ਼੍ਰੀ ਅਕਾਲ! ਮੈਂ ਤੁਹਾਡਾ ਸਹਾਇਕ ਹਾਂ। ਅੱਜ ਮੈਂ ਪਲੇਟਫਾਰਮ ਨੂੰ ਨੈਵੀਗੇਟ ਕਰਨ ਵਿੱਚ ਤੁਹਾਡੀ ਕਿਵੇਂ ਮਦਦ ਕਰ ਸਕਦਾ ਹਾਂ?", responses: { 'ਗਣਿਤ ਪ੍ਰਗਤੀ ਸਫ਼ਰ': "ਆਪਣੀ ਗਣਿਤ ਦੀ ਪ੍ਰਗਤੀ ਦੇਖਣ ਲਈ, ਵਿਦਿਆਰਥੀ ਡੈਸ਼ਬੋਰਡ 'ਤੇ ਜਾਓ ਅਤੇ ਗਣਿਤ ਕਾਰਡ 'ਤੇ 'ਪਾਠ ਜਾਰੀ ਰੱਖੋ' ਬਟਨ 'ਤੇ ਕਲਿੱਕ ਕਰੋ।", 'ਅੰਗਰੇਜ਼ੀ ਪ੍ਰਗਤੀ ਸਫ਼ਰ': "ਆਪਣੀ ਅੰਗਰੇਜ਼ੀ ਦੀ ਪ੍ਰਗਤੀ ਦੇਖਣ ਲਈ, ਵਿਦਿਆਰਥੀ ਡੈਸ਼ਬੋਰਡ 'ਤੇ ਜਾਓ ਅਤੇ ਅੰਗਰੇਜ਼ੀ ਕਾਰਡ 'ਤੇ ਬਟਨ 'ਤੇ ਕਲਿੱਕ ਕਰੋ।", 'ਵਿਗਿਆਨ ਪ੍ਰਗਤੀ ਸਫ਼ਰ': "ਆਪਣੀ ਵਿਗਿਆਨ ਦੀ ਪ੍ਰਗਤੀ ਦੇਖਣ ਲਈ, ਵਿਦਿਆਰਥੀ ਡੈਸ਼ਬੋਰਡ 'ਤੇ ਜਾਓ ਅਤੇ ਵਿਗਿਆਨ ਕਾਰਡ 'ਤੇ ਬਟਨ 'ਤੇ ਕਲਿੱਕ ਕਰੋ।", 'ਕਹਾਣੀ ਕਿਤਾਬਾਂ ਪੜ੍ਹੋ ਲਾਇਬ੍ਰੇਰੀ': "ਤੁਸੀਂ ਆਪਣੇ ਡੈਸ਼ਬੋਰਡ 'ਤੇ ਲਾਇਬ੍ਰੇਰੀ ਸੈਕਸ਼ਨ ਵਿੱਚ ਕਹਾਣੀਆਂ ਦੀਆਂ ਕਿਤਾਬਾਂ ਲੱਭ ਸਕਦੇ ਹੋ। 'ਕਹਾਣੀਆਂ ਦੀਆਂ ਕਿਤਾਬਾਂ' ਦੇ ਹੇਠਾਂ 'ਹੁਣੇ ਪੜ੍ਹੋ' ਬਟਨ 'ਤੇ ਕਲਿੱਕ ਕਰੋ।", 'ਟਾਈਪਿੰਗ ਅਭਿਆਸ ਕੀ-ਬੋਰਡ': "ਆਪਣੇ ਡੈਸ਼ਬੋਰਡ ਤੋਂ 'ਡਿਜੀਟਲ ਸਾਖਰਤਾ ਕੇਂਦਰ' 'ਤੇ ਜਾਓ। ਅੰਦਰ, ਤੁਸੀਂ 'ਟਾਈਪਿੰਗ ਅਭਿਆਸ' ਮੋਡੀਊਲ ਲੱਭ ਸਕਦੇ ਹੋ।", 'ਸੁਰੱਖਿਅਤ ਸੁਰੱਖਿਆ ਇੰਟਰਨੈੱਟ ਆਨਲਾਈਨ': "'ਡਿਜੀਟਲ ਸਾਖਰਤਾ ਕੇਂਦਰ' ਵਿੱਚ 'ਆਨਲਾਈਨ ਸੁਰੱਖਿਅਤ ਰਹਿਣਾ' ਬਾਰੇ ਇੱਕ ਸੈਕਸ਼ਨ ਹੈ। ਤੁਸੀਂ ਇਸਨੂੰ ਵਿਦਿਆਰਥੀ ਡੈਸ਼ਬੋਰਡ ਤੋਂ ਐਕਸੈਸ ਕਰ ਸਕਦੇ ਹੋ।", 'ਨਵਾਂ ਅਸਾਈਨਮੈਂਟ ਸ਼ਾਮਲ ਅੱਪਲੋਡ': "ਅਧਿਆਪਕ ਡੈਸ਼ਬੋਰਡ 'ਤੇ, ਤੁਸੀਂ 'ਨਵੀਂ ਅਸਾਈਨਮੈਂਟ ਸ਼ਾਮਲ ਕਰੋ' ਫਾਰਮ ਲੱਭ ਸਕਦੇ ਹੋ। ਵੇਰਵੇ ਭਰੋ ਅਤੇ 'ਅਸਾਈਨਮੈਂਟ ਅੱਪਲੋਡ ਕਰੋ' 'ਤੇ ਕਲਿੱਕ ਕਰੋ।", 'ਵਿਦਿਆਰਥੀ ਪ੍ਰਗਤੀ ਵਿਦਿਆਰਥੀਆਂ ਨੂੰ ਟਰੈਕ': "ਤੁਹਾਡੇ ਡੈਸ਼ਬੋਰਡ 'ਤੇ 'ਵਿਦਿਆਰਥੀ ਦੀ ਪ੍ਰਗਤੀ' ਸਾਰਣੀ ਹਰੇਕ ਵਿਦਿਆਰਥੀ ਦਾ ਨਾਮ, ਸਮੁੱਚੀ ਪ੍ਰਗਤੀ, ਅਤੇ ਆਖਰੀ ਸਰਗਰਮ ਸਮਾਂ ਦਰਸਾਉਂਦੀ ਹੈ।", 'ਔਫਲਾਈਨ ਇੰਟਰਨੈੱਟ': "ਤੁਸੀਂ ਪੰਨੇ ਦੇ ਸਿਖਰ 'ਤੇ 'ਔਫਲਾਈਨ ਮੋਡ' ਟੌਗਲ ਸਵਿੱਚ ਦੀ ਵਰਤੋਂ ਕਰ ਸਕਦੇ ਹੋ। ਜਦੋਂ ਇਹ ਚਾਲੂ ਹੁੰਦਾ ਹੈ, ਤਾਂ ਕੁਝ ਔਨਲਾਈਨ-ਸਿਰਫ਼ ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ ਅਯੋਗ ਹੋ ਸਕਦੀਆਂ ਹਨ।", 'ਭਾਸ਼ਾ ਪੰਜਾਬੀ ਅੰਗਰੇਜ਼ੀ': "ਅੰਗਰੇਜ਼ੀ ਅਤੇ ਪੰਜਾਬੀ ਵਿੱਚ ਬਦਲਣ ਲਈ ਪੰਨੇ ਦੇ ਉੱਪਰ-ਸੱਜੇ ਪਾਸੇ ਭਾਸ਼ਾ ਸਵਿੱਚਰ ਡ੍ਰੌਪਡਾਉਨ ਮੀਨੂ ਦੀ ਵਰਤੋਂ ਕਰੋ।" } } };
+    const toggleChatWindow = () => { chatWindow.classList.toggle('active'); if (chatWindow.classList.contains('active')) { addMessageToChat('bot', chatBotData[languageSwitcher.value].greeting); } else { chatMessages.innerHTML = ''; } };
+    const addMessageToChat = (sender, message) => { const messageElement = document.createElement('div'); messageElement.classList.add('chat-message', sender === 'user' ? 'user-message' : 'bot-message'); messageElement.textContent = message; chatMessages.appendChild(messageElement); chatMessages.scrollTop = chatMessages.scrollHeight; };
+    const getBotResponse = (userInput) => { const lang = languageSwitcher.value; const lowerInput = userInput.toLowerCase(); const responses = chatBotData[lang].responses; for (const keywords in responses) { const keywordArray = keywords.split(' '); if (keywordArray.some(keyword => lowerInput.includes(keyword))) { return responses[keywords]; } } return chatBotData[lang].default; };
+    const handleSendMessage = () => { const userInput = chatInput.value.trim(); if (userInput === '') return; addMessageToChat('user', userInput); chatInput.value = ''; setTimeout(() => { const botResponse = getBotResponse(userInput); addMessageToChat('bot', botResponse); }, 500); };
+    chatFab.addEventListener('click', toggleChatWindow);
+    chatCloseBtn.addEventListener('click', toggleChatWindow);
+    chatSendBtn.addEventListener('click', handleSendMessage);
+    chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') { handleSendMessage(); } });
+});
+</script>
+
+</body>
+</html>

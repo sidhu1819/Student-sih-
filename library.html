@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en-IN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Library Hub</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-blue: #007bff;
+            --light-bg: #f0f4f8;
+            --white-card: #ffffff;
+            --dark-text: #333;
+            --light-text: #666;
+            --header-purple: #4e54c8;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Nunito', sans-serif; background-color: var(--light-bg); color: var(--dark-text); }
+        .dashboard-container { max-width: 900px; margin: 0 auto; padding: 20px; }
+        .welcome-header { background: linear-gradient(135deg, #4e54c8 0%, #8f94fb 100%); color: white; padding: 25px; border-radius: 16px; margin-bottom: 30px; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1); }
+        .welcome-header-top { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        .header-controls { display: flex; align-items: center; flex-wrap: wrap; gap: 15px; }
+        #language-switcher { background-color: rgba(255, 255, 255, 0.2); color: white; border: 1px solid rgba(255, 255, 255, 0.3); padding: 8px 12px; border-radius: 25px; font-weight: 700; cursor: pointer; }
+        #language-switcher option { color: black; }
+        .header-link { background-color: rgba(255, 255, 255, 0.2); color: white; padding: 10px 20px; border-radius: 25px; text-decoration: none; font-weight: 700; }
+        .tab-nav { display: flex; background-color: #e9ecef; border-radius: 12px; padding: 5px; margin-bottom: 30px; }
+        .tab-btn { flex: 1; padding: 15px; border: none; background-color: transparent; font-family: 'Nunito', sans-serif; font-size: 1.1rem; font-weight: 800; color: var(--light-text); cursor: pointer; transition: background-color 0.3s, color 0.3s; border-radius: 8px; }
+        .tab-btn.active { background-color: var(--white-card); color: var(--header-purple); box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); }
+        .content-pane { display: none; background-color: var(--white-card); padding: 40px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); animation: fadeIn 0.5s; }
+        .content-pane.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .content-pane h1 { font-size: 2.5rem; color: var(--primary-blue); margin-bottom: 25px; text-align: center; }
+        .content-pane h3 { font-size: 1.5rem; color: var(--dark-text); margin-top: 25px; margin-bottom: 10px; border-bottom: 2px solid #eee; padding-bottom: 5px; }
+        .content-pane p { font-size: 1.2rem; line-height: 1.8; margin-bottom: 20px; }
+        
+        /* --- CHATBOT STYLES --- */
+        #chat-fab { position: fixed; bottom: 25px; right: 25px; width: 60px; height: 60px; background: linear-gradient(45deg, #007bff, #0056b3); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); cursor: pointer; z-index: 1001; transition: transform 0.2s; }
+        #chat-fab:hover { transform: scale(1.1); }
+        #chat-fab svg { width: 32px; height: 32px; color: white; }
+        #chat-window { display: none; position: fixed; bottom: 100px; right: 25px; width: 350px; max-width: 90vw; height: 500px; max-height: 70vh; background-color: var(--white-card); border-radius: 16px; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15); z-index: 1000; display: none; flex-direction: column; overflow: hidden; }
+        #chat-window.active { display: flex; }
+        .chat-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px; font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
+        #chat-close-btn { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
+        .chat-messages { flex-grow: 1; padding: 15px; overflow-y: auto; background-color: #f0f4f8; }
+        .chat-message { padding: 10px 15px; border-radius: 18px; margin-bottom: 10px; max-width: 80%; line-height: 1.4; }
+        .user-message { background-color: var(--primary-blue); color: white; align-self: flex-end; margin-left: auto; border-bottom-right-radius: 4px; }
+        .bot-message { background-color: #e9ecef; color: var(--dark-text); align-self: flex-start; border-bottom-left-radius: 4px; }
+        .chat-input-container { padding: 10px; border-top: 1px solid #eee; display: flex; gap: 10px; }
+        #chat-input { flex-grow: 1; border: 1px solid #ccc; border-radius: 20px; padding: 10px 15px; font-size: 1rem; font-family: 'Nunito', sans-serif; }
+        #chat-send-btn { border: none; background-color: var(--primary-blue); color: white; font-weight: 700; border-radius: 20px; padding: 10px 20px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="dashboard-container">
+    <header class="welcome-header">
+        <div class="welcome-header-top">
+            <a href="student-dashboard.html" class="header-link" data-key="back_to_dashboard">← Back to Dashboard</a>
+            <div class="header-controls">
+                <select id="language-switcher">
+                    <option value="en">English</option>
+                    <option value="pa">ਪੰਜਾਬੀ</option>
+                </select>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="tab-nav">
+            <button class="tab-btn" data-tab="stories" data-key="tab_stories">Story Books</button>
+            <button class="tab-btn" data-tab="science" data-key="tab_science">Science & Nature</button>
+            <button class="tab-btn" data-tab="history" data-key="tab_history">History & Culture</button>
+        </div>
+
+        <!-- Stories Pane -->
+        <div id="stories" class="content-pane">
+            <h1 data-key="story_title">The Lion and the Mouse</h1>
+            <p data-key="story_p1">Once, a mighty lion was sleeping in the forest. A little mouse began running up and down on him for fun. This soon woke the lion, who placed his huge paw on the mouse and opened his big jaws to swallow him.</p>
+            <p data-key="story_p2">"Pardon, O King!" cried the little mouse. "Forgive me this time. I shall never repeat it and I shall never forget your kindness. Who knows, I may be able to do you a good turn one of these days!”</p>
+            <p data-key="story_p3">The lion was so amused by the idea of the mouse being able to help him that he lifted his paw and let him go. Some time later, a few hunters captured the lion, and tied him to a tree. After that, they went in search of a wagon to carry him to the zoo.</p>
+            <p data-key="story_p4">Just then the little mouse happened to pass by. On seeing the lion’s plight, he ran up to him and gnawed away the ropes that bound him, the king of the jungle. The mouse said, "Was I not right when I said I could help you one day?"</p>
+            <p><strong><span data-key="story_moral_label">Moral:</span></strong> <span data-key="story_moral_text">Little friends may prove to be great friends.</span></p>
+        </div>
+
+        <!-- Science Pane -->
+        <div id="science" class="content-pane">
+            <h1 data-key="science_title">Amazing Animal Facts</h1>
+            <h3 data-key="fact1_title">The Octopus</h3>
+            <p data-key="fact1_text">An octopus has three hearts! Two hearts pump blood through the gills, and the third heart pumps it to the rest of the body.</p>
+            <h3 data-key="fact2_title">The Hummingbird</h3>
+            <p data-key="fact2_text">A hummingbird's wings beat about 80 times per second. They are the only birds that can fly backwards.</p>
+            <h3 data-key="fact3_title">The Blue Whale</h3>
+            <p data-key="fact3_text">The blue whale is the largest animal on Earth. Its heart is the size of a small car, and a child could swim through its main arteries.</p>
+        </div>
+
+        <!-- History Pane -->
+        <div id="history" class="content-pane">
+            <h1 data-key="history_title">The Story of Punjab</h1>
+            <p data-key="history_p1">Punjab, also known as the "Land of Five Rivers," is a vibrant state in northern India with a very rich history. The five rivers—Sutlej, Beas, Ravi, Chenab, and Jhelum—have made its land very fertile for thousands of years.</p>
+            <p data-key="history_p2">It is famous for its brave warriors, spiritual Gurus, and a culture full of life, music, and dance like Bhangra. The Golden Temple in Amritsar is a very important and beautiful place for people all over the world.</p>
+            <p data-key="history_p3">Because of its fertile soil, Punjab is often called the "Breadbasket of India," as it grows a lot of wheat and rice for the country. The people are known for their hard work, hospitality, and delicious food.</p>
+        </div>
+    </main>
+</div>
+
+<!-- CHATBOT -->
+<div id="chat-fab">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8 15c4.418 0 8-3.134 8-7s-3.582-7-8-7-8 3.134-8 7c0 1.76.743 3.37 1.97 4.6-.097 1.016-.417 2.13-.771 2.966-.079.186.074.394.273.362 2.256-.37 3.597-.938 4.18-1.234A9.06 9.06 0 0 0 8 15z"/></svg>
+</div>
+<div id="chat-window">
+    <div class="chat-header">
+        <span class="chat-header-title" data-key="chatbot_title">Chat Help</span>
+        <button id="chat-close-btn">&times;</button>
+    </div>
+    <div class="chat-messages" id="chat-messages"></div>
+    <div class="chat-input-container">
+        <input type="text" id="chat-input" data-key-placeholder="chatbot_placeholder">
+        <button id="chat-send-btn" data-key="chatbot_send_btn">Send</button>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // --- Tab Switching Logic ---
+    const tabs = document.querySelectorAll('.tab-btn');
+    const panes = document.querySelectorAll('.content-pane');
+    const showPane = (tabId) => {
+        panes.forEach(pane => pane.classList.remove('active'));
+        tabs.forEach(tab => tab.classList.remove('active'));
+        const paneToShow = document.getElementById(tabId);
+        if (paneToShow) {
+            paneToShow.classList.add('active');
+            document.querySelector(`.tab-btn[data-tab="${tabId}"]`).classList.add('active');
+        }
+    };
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const tabId = tab.getAttribute('data-tab');
+            window.location.hash = tabId;
+            showPane(tabId);
+        });
+    });
+    const initialTab = window.location.hash.substring(1) || 'stories';
+    showPane(initialTab);
+
+    // --- Language and Chatbot Logic ---
+    const languageSwitcher = document.getElementById('language-switcher');
+    const translations = {
+        en: { 
+            back_to_dashboard: '← Back to Dashboard', 
+            tab_stories: 'Story Books', 
+            tab_science: 'Science & Nature', 
+            tab_history: 'History & Culture',
+            story_title: 'The Lion and the Mouse', story_p1: 'Once, a mighty lion was sleeping in the forest. A little mouse began running up and down on him for fun. This soon woke the lion, who placed his huge paw on the mouse and opened his big jaws to swallow him.', story_p2: '"Pardon, O King!" cried the little mouse. "Forgive me this time. I shall never repeat it and I shall never forget your kindness. Who knows, I may be able to do you a good turn one of these days!”', story_p3: 'The lion was so amused by the idea of the mouse being able to help him that he lifted his paw and let him go. Some time later, a few hunters captured the lion, and tied him to a tree. After that, they went in search of a wagon to carry him to the zoo.', story_p4: 'Just then the little mouse happened to pass by. On seeing the lion’s plight, he ran up to him and gnawed away the ropes that bound him, the king of the jungle. The mouse said, "Was I not right when I said I could help you one day?"', story_moral_label: 'Moral:', story_moral_text: 'Little friends may prove to be great friends.',
+            science_title: 'Amazing Animal Facts', fact1_title: 'The Octopus', fact1_text: 'An octopus has three hearts! Two hearts pump blood through the gills, and the third heart pumps it to the rest of the body.', fact2_title: 'The Hummingbird', fact2_text: "A hummingbird's wings beat about 80 times per second. They are the only birds that can fly backwards.", fact3_title: 'The Blue Whale', fact3_text: 'The blue whale is the largest animal on Earth. Its heart is the size of a small car, and a child could swim through its main arteries.',
+            history_title: 'The Story of Punjab', history_p1: 'Punjab, also known as the "Land of Five Rivers," is a vibrant state in northern India with a very rich history. The five rivers—Sutlej, Beas, Ravi, Chenab, and Jhelum—have made its land very fertile for thousands of years.', history_p2: 'It is famous for its brave warriors, spiritual Gurus, and a culture full of life, music, and dance like Bhangra. The Golden Temple in Amritsar is a very important and beautiful place for people all over the world.', history_p3: 'Because of its fertile soil, Punjab is often called the "Breadbasket of India," as it grows a lot of wheat and rice for the country. The people are known for their hard work, hospitality, and delicious food.',
+            chatbot_title: 'Chat Help', chatbot_placeholder: 'Type a message...', chatbot_send_btn: 'Send'
+        },
+        pa: { 
+            back_to_dashboard: '← ਡੈਸ਼ਬੋਰਡ \'ਤੇ ਵਾਪਸ', 
+            tab_stories: 'ਕਹਾਣੀਆਂ ਦੀਆਂ ਕਿਤਾਬਾਂ', 
+            tab_science: 'ਵਿਗਿਆਨ ਅਤੇ ਕੁਦਰਤ', 
+            tab_history: 'ਇਤਿਹਾਸ ਅਤੇ ਸਭਿਆਚਾਰ',
+            story_title: 'ਸ਼ੇਰ ਅਤੇ ਚੂਹਾ', story_p1: 'ਇੱਕ ਵਾਰ, ਇੱਕ ਸ਼ਕਤੀਸ਼ਾਲੀ ਸ਼ੇਰ ਜੰਗਲ ਵਿੱਚ ਸੌਂ ਰਿਹਾ ਸੀ। ਇੱਕ ਛੋਟਾ ਚੂਹਾ ਮਜ਼ੇ ਲਈ ਉਸ ਉੱਤੇ ਉੱਪਰ-ਹੇਠਾਂ ਦੌੜਨ ਲੱਗਾ। ਇਸ ਨਾਲ ਜਲਦੀ ਹੀ ਸ਼ੇਰ ਜਾਗ ਗਿਆ, ਜਿਸਨੇ ਆਪਣਾ ਵੱਡਾ ਪੰਜਾ ਚੂਹੇ ਉੱਤੇ ਰੱਖਿਆ ਅਤੇ ਉਸਨੂੰ ਨਿਗਲਣ ਲਈ ਆਪਣਾ ਵੱਡਾ ਮੂੰਹ ਖੋਲ੍ਹਿਆ।', story_p2: '"ਮਾਫ਼ ਕਰਨਾ, ਹੇ ਰਾਜਾ!" ਛੋਟਾ ਚੂਹਾ ਚੀਕਿਆ। "ਇਸ ਵਾਰ ਮੈਨੂੰ ਮਾਫ਼ ਕਰ ਦਿਓ। ਮੈਂ ਇਸਨੂੰ ਕਦੇ ਨਹੀਂ ਦੁਹਰਾਵਾਂਗਾ ਅਤੇ ਮੈਂ ਤੁਹਾਡੀ ਦਿਆਲਤਾ ਨੂੰ ਕਦੇ ਨਹੀਂ ਭੁੱਲਾਂਗਾ। ਕੌਣ ਜਾਣਦਾ ਹੈ, ਮੈਂ ਕਿਸੇ ਦਿਨ ਤੁਹਾਡੇ ਕੰਮ ਆ ਸਕਦਾ ਹਾਂ!"', story_p3: 'ਸ਼ੇਰ ਨੂੰ ਇਸ ਵਿਚਾਰ \'ਤੇ ਇੰਨਾ ਹਾਸਾ ਆਇਆ ਕਿ ਚੂਹਾ ਉਸਦੀ ਮਦਦ ਕਰ ਸਕਦਾ ਹੈ, ਉਸਨੇ ਆਪਣਾ ਪੰਜਾ ਚੁੱਕਿਆ ਅਤੇ ਉਸਨੂੰ ਜਾਣ ਦਿੱਤਾ। ਕੁਝ ਸਮੇਂ ਬਾਅਦ, ਕੁਝ ਸ਼ਿਕਾਰੀਆਂ ਨੇ ਸ਼ੇਰ ਨੂੰ ਫੜ ਲਿਆ, ਅਤੇ ਉਸਨੂੰ ਇੱਕ ਦਰੱਖਤ ਨਾਲ ਬੰਨ੍ਹ ਦਿੱਤਾ। ਉਸ ਤੋਂ ਬਾਅਦ, ਉਹ ਉਸਨੂੰ ਚਿੜੀਆਘਰ ਲਿਜਾਣ ਲਈ ਇੱਕ ਗੱਡੀ ਦੀ ਭਾਲ ਵਿੱਚ ਚਲੇ ਗਏ।', story_p4: 'ਠੀਕ ਉਸੇ ਸਮੇਂ ਛੋਟਾ ਚੂਹਾ ਉੱਥੋਂ ਲੰਘਿਆ। ਸ਼ੇਰ ਦੀ ਦੁਰਦਸ਼ਾ ਦੇਖ ਕੇ, ਉਹ ਉਸਦੇ ਕੋਲ ਦੌੜਿਆ ਅਤੇ ਜੰਗਲ ਦੇ ਰਾਜੇ ਨੂੰ ਬੰਨ੍ਹਣ ਵਾਲੀਆਂ ਰੱਸੀਆਂ ਨੂੰ ਆਪਣੇ ਦੰਦਾਂ ਨਾਲ ਕੱਟ ਦਿੱਤਾ। ਚੂਹੇ ਨੇ ਕਿਹਾ, "ਕੀ ਮੈਂ ਸਹੀ ਨਹੀਂ ਸੀ ਜਦੋਂ ਮੈਂ ਕਿਹਾ ਸੀ ਕਿ ਮੈਂ ਇੱਕ ਦਿਨ ਤੁਹਾਡੀ ਮਦਦ ਕਰ ਸਕਦਾ ਹਾਂ?"', story_moral_label: 'ਸਿੱਖਿਆ:', story_moral_text: 'ਛੋਟੇ ਦੋਸਤ ਵੱਡੇ ਦੋਸਤ ਸਾਬਤ ਹੋ ਸਕਦੇ ਹਨ।',
+            science_title: 'ਜਾਨਵਰਾਂ ਬਾਰੇ ਹੈਰਾਨੀਜਨਕ ਤੱਥ', fact1_title: 'ਆਕਟੋਪਸ', fact1_text: 'ਇੱਕ ਆਕਟੋਪਸ ਦੇ ਤਿੰਨ ਦਿਲ ਹੁੰਦੇ ਹਨ! ਦੋ ਦਿਲ ਗਲਫ਼ੜਿਆਂ ਰਾਹੀਂ ਖੂਨ ਪੰਪ ਕਰਦੇ ਹਨ, ਅਤੇ ਤੀਜਾ ਦਿਲ ਇਸਨੂੰ ਬਾਕੀ ਸਰੀਰ ਵਿੱਚ ਪੰਪ ਕਰਦਾ ਹੈ।', fact2_title: 'ਹਮਿੰਗਬਰਡ', fact2_text: 'ਇੱਕ ਹਮਿੰਗਬਰਡ ਦੇ ਖੰਭ ਪ੍ਰਤੀ ਸਕਿੰਟ ਲਗਭਗ 80 ਵਾਰ ਫੜਫੜਾਉਂਦੇ ਹਨ। ਇਹ ਇੱਕੋ-ਇੱਕ ਪੰਛੀ ਹਨ ਜੋ ਪਿੱਛੇ ਵੱਲ ਉੱਡ ਸਕਦੇ ਹਨ।', fact3_title: 'ਨੀਲੀ ਵ੍ਹੇਲ', fact3_text: 'ਨੀਲੀ ਵ੍ਹੇਲ ਧਰਤੀ ਦਾ ਸਭ ਤੋਂ ਵੱਡਾ ਜਾਨਵਰ ਹੈ। ਇਸਦਾ ਦਿਲ ਇੱਕ ਛੋਟੀ ਕਾਰ ਦੇ ਆਕਾਰ ਦਾ ਹੁੰਦਾ ਹੈ, ਅਤੇ ਇੱਕ ਬੱਚਾ ਇਸਦੀਆਂ ਮੁੱਖ ਧਮਣੀਆਂ ਵਿੱਚ ਤੈਰ ਸਕਦਾ ਹੈ।',
+            history_title: 'ਪੰਜਾਬ ਦੀ ਕਹਾਣੀ', history_p1: 'ਪੰਜਾਬ, ਜਿਸਨੂੰ "ਪੰਜ ਦਰਿਆਵਾਂ ਦੀ ਧਰਤੀ" ਵੀ ਕਿਹਾ ਜਾਂਦਾ ਹੈ, ਉੱਤਰੀ ਭਾਰਤ ਦਾ ਇੱਕ ਜੀਵੰਤ ਰਾਜ ਹੈ ਜਿਸਦਾ ਇਤਿਹਾਸ ਬਹੁਤ ਅਮੀਰ ਹੈ। ਪੰਜ ਦਰਿਆਵਾਂ — ਸਤਲੁਜ, ਬਿਆਸ, ਰਾਵੀ, ਚਨਾਬ, ਅਤੇ ਜੇਹਲਮ — ਨੇ ਹਜ਼ਾਰਾਂ ਸਾਲਾਂ ਤੋਂ ਇਸਦੀ ਧਰਤੀ ਨੂੰ ਬਹੁਤ ਉਪਜਾਊ ਬਣਾਇਆ ਹੈ।', history_p2: 'ਇਹ ਆਪਣੇ ਬਹਾਦਰ ਯੋਧਿਆਂ, ਅਧਿਆਤਮਿਕ ਗੁਰੂਆਂ, ਅਤੇ ਭੰਗੜੇ ਵਰਗੇ ਜੀਵਨ, ਸੰਗੀਤ, ਅਤੇ ਨਾਚ ਨਾਲ ਭਰਪੂਰ ਸੱਭਿਆਚਾਰ ਲਈ ਮਸ਼ਹੂਰ ਹੈ। ਅੰਮ੍ਰਿਤਸਰ ਵਿੱਚ ਸਥਿਤ ਹਰਿਮੰਦਰ ਸਾਹਿਬ ਦੁਨੀਆ ਭਰ ਦੇ ਲੋਕਾਂ ਲਈ ਇੱਕ ਬਹੁਤ ਹੀ ਮਹੱਤਵਪੂਰਨ ਅਤੇ ਸੁੰਦਰ ਸਥਾਨ ਹੈ।', history_p3: 'ਆਪਣੀ ਉਪਜਾਊ ਮਿੱਟੀ ਦੇ ਕਾਰਨ, ਪੰਜਾਬ ਨੂੰ ਅਕਸਰ "ਭਾਰਤ ਦਾ ਅੰਨ ਭੰਡਾਰ" ਕਿਹਾ ਜਾਂਦਾ ਹੈ, ਕਿਉਂਕਿ ਇਹ ਦੇਸ਼ ਲਈ ਬਹੁਤ ਸਾਰੀ ਕਣਕ ਅਤੇ ਚਾਵਲ ਉਗਾਉਂਦਾ ਹੈ। ਇੱਥੋਂ ਦੇ ਲੋਕ ਆਪਣੀ ਸਖ਼ਤ ਮਿਹਨਤ, ਪਰਾਹੁਣਚਾਰੀ, ਅਤੇ ਸੁਆਦੀ ਭੋਜਨ ਲਈ ਜਾਣੇ ਜਾਂਦੇ ਹਨ।',
+            chatbot_title: 'ਚੈਟ ਮਦਦ', chatbot_placeholder: 'ਇੱਕ ਸੁਨੇਹਾ ਟਾਈਪ ਕਰੋ...', chatbot_send_btn: 'ਭੇਜੋ'
+        }
+    };
+    const setLanguage = (language) => { 
+        document.querySelectorAll('[data-key]').forEach(element => { const key = element.getAttribute('data-key'); if (translations[language][key]) { element.textContent = translations[language][key]; } }); 
+        document.querySelectorAll('[data-key-placeholder]').forEach(element => { const key = element.getAttribute('data-key-placeholder'); if (translations[language][key]) { element.placeholder = translations[language][key]; } });
+        document.documentElement.lang = language === 'pa' ? 'pa-IN' : 'en-IN'; 
+    };
+    languageSwitcher.addEventListener('change', (event) => setLanguage(event.target.value));
+    
+    // --- CHATBOT SCRIPT ---
+    const chatFab = document.getElementById('chat-fab');
+    const chatWindow = document.getElementById('chat-window');
+    const chatCloseBtn = document.getElementById('chat-close-btn');
+    const chatMessages = document.getElementById('chat-messages');
+    const chatInput = document.getElementById('chat-input');
+    const chatSendBtn = document.getElementById('chat-send-btn');
+    const chatBotData = { en: { default: "Sorry, I don't understand. Can you ask about navigating the website, like 'how to see math progress' or 'where can I practice typing'?", greeting: "Hello! I am your assistant. How can I help you navigate the platform today?", responses: { 'math progress journey': "To see your Math progress, go to the Student Dashboard and click the 'Continue Lesson' button on the Mathematics card.", 'english progress journey': "To see your English progress, go to the Student Dashboard and click the button on the English card.", 'science progress journey': "To see your Science progress, go to the Student Dashboard and click the button on the Science card.", 'story books read library': "You can find story books in the Library section on your dashboard. Click the 'Read Now' button under 'Story Books'.", 'typing practice keyboard': "Go to the 'Digital Literacy Hub' from your dashboard. Inside, you can find the 'Typing Practice' module.", 'safe safety internet online': "The 'Digital Literacy Hub' has a section on 'Staying Safe Online'. You can access it from the student dashboard.", 'add new assignment upload': "On the Teacher Dashboard, you can find the 'Add New Assignment' form. Fill in the details and click 'Upload Assignment'.", 'student progress see students track': "The 'Student Progress' table on your dashboard shows the name, overall progress, and last active time for each student.", 'offline internet': "You can use the 'Offline Mode' toggle switch at the top of the page. When active, some online-only features might be disabled.", 'language punjabi english': "Use the language switcher dropdown menu at the top-right of the page to switch between English and Punjabi." } }, pa: { default: "ਮਾਫ਼ ਕਰਨਾ, ਮੈਨੂੰ ਸਮਝ ਨਹੀਂ ਆਇਆ। ਕੀ ਤੁਸੀਂ ਵੈੱਬਸਾਈਟ ਨੈਵੀਗੇਟ ਕਰਨ ਬਾਰੇ ਪੁੱਛ ਸਕਦੇ ਹੋ, ਜਿਵੇਂ ਕਿ 'ਗਣਿਤ ਦੀ ਪ੍ਰਗਤੀ ਕਿਵੇਂ ਵੇਖਣੀ ਹੈ' ਜਾਂ 'ਮੈਂ ਟਾਈਪਿੰਗ ਦਾ ਅਭਿਆਸ ਕਿੱਥੇ ਕਰ ਸਕਦਾ ਹਾਂ'?", greeting: "ਸਤਿ ਸ਼੍ਰੀ ਅਕਾਲ! ਮੈਂ ਤੁਹਾਡਾ ਸਹਾਇਕ ਹਾਂ। ਅੱਜ ਮੈਂ ਪਲੇਟਫਾਰਮ ਨੂੰ ਨੈਵੀਗੇਟ ਕਰਨ ਵਿੱਚ ਤੁਹਾਡੀ ਕਿਵੇਂ ਮਦਦ ਕਰ ਸਕਦਾ ਹਾਂ?", responses: { 'ਗਣਿਤ ਪ੍ਰਗਤੀ ਸਫ਼ਰ': "ਆਪਣੀ ਗਣਿਤ ਦੀ ਪ੍ਰਗਤੀ ਦੇਖਣ ਲਈ, ਵਿਦਿਆਰਥੀ ਡੈਸ਼ਬੋਰਡ 'ਤੇ ਜਾਓ ਅਤੇ ਗਣਿਤ ਕਾਰਡ 'ਤੇ 'ਪਾਠ ਜਾਰੀ ਰੱਖੋ' ਬਟਨ 'ਤੇ ਕਲਿੱਕ ਕਰੋ।", 'ਅੰਗਰੇਜ਼ੀ ਪ੍ਰਗਤੀ ਸਫ਼ਰ': "ਆਪਣੀ ਅੰਗਰੇਜ਼ੀ ਦੀ ਪ੍ਰਗਤੀ ਦੇਖਣ ਲਈ, ਵਿਦਿਆਰਥੀ ਡੈਸ਼ਬੋਰਡ 'ਤੇ ਜਾਓ ਅਤੇ ਅੰਗਰੇਜ਼ੀ ਕਾਰਡ 'ਤੇ ਬਟਨ 'ਤੇ ਕਲਿੱਕ ਕਰੋ।", 'ਵਿਗਿਆਨ ਪ੍ਰਗਤੀ ਸਫ਼ਰ': "ਆਪਣੀ ਵਿਗਿਆਨ ਦੀ ਪ੍ਰਗਤੀ ਦੇਖਣ ਲਈ, ਵਿਦਿਆਰਥੀ ਡੈਸ਼ਬੋਰਡ 'ਤੇ ਜਾਓ ਅਤੇ ਵਿਗਿਆਨ ਕਾਰਡ 'ਤੇ ਬਟਨ 'ਤੇ ਕਲਿੱਕ ਕਰੋ।", 'ਕਹਾਣੀ ਕਿਤਾਬਾਂ ਪੜ੍ਹੋ ਲਾਇਬ੍ਰੇਰੀ': "ਤੁਸੀਂ ਆਪਣੇ ਡੈਸ਼ਬੋਰਡ 'ਤੇ ਲਾਇਬ੍ਰੇਰੀ ਸੈਕਸ਼ਨ ਵਿੱਚ ਕਹਾਣੀਆਂ ਦੀਆਂ ਕਿਤਾਬਾਂ ਲੱਭ ਸਕਦੇ ਹੋ। 'ਕਹਾਣੀਆਂ ਦੀਆਂ ਕਿਤਾਬਾਂ' ਦੇ ਹੇਠਾਂ 'ਹੁਣੇ ਪੜ੍ਹੋ' ਬਟਨ 'ਤੇ ਕਲਿੱਕ ਕਰੋ।", 'ਟਾਈਪਿੰਗ ਅਭਿਆਸ ਕੀ-ਬੋਰਡ': "ਆਪਣੇ ਡੈਸ਼ਬੋਰਡ ਤੋਂ 'ਡਿਜੀਟਲ ਸਾਖਰਤਾ ਕੇਂਦਰ' 'ਤੇ ਜਾਓ। ਅੰਦਰ, ਤੁਸੀਂ 'ਟਾਈਪਿੰਗ ਅਭਿਆਸ' ਮੋਡੀਊਲ ਲੱਭ ਸਕਦੇ ਹੋ।", 'ਸੁਰੱਖਿਅਤ ਸੁਰੱਖਿਆ ਇੰਟਰਨੈੱਟ ਆਨਲਾਈਨ': "'ਡਿਜੀਟਲ ਸਾਖਰਤਾ ਕੇਂਦਰ' ਵਿੱਚ 'ਆਨਲਾਈਨ ਸੁਰੱਖਿਅਤ ਰਹਿਣਾ' ਬਾਰੇ ਇੱਕ ਸੈਕਸ਼ਨ ਹੈ। ਤੁਸੀਂ ਇਸਨੂੰ ਵਿਦਿਆਰਥੀ ਡੈਸ਼ਬੋਰਡ ਤੋਂ ਐਕਸੈਸ ਕਰ ਸਕਦੇ ਹੋ।", 'ਨਵਾਂ ਅਸਾਈਨਮੈਂਟ ਸ਼ਾਮਲ ਅੱਪਲੋਡ': "ਅਧਿਆਪਕ ਡੈਸ਼ਬੋਰਡ 'ਤੇ, ਤੁਸੀਂ 'ਨਵੀਂ ਅਸਾਈਨਮੈਂਟ ਸ਼ਾਮਲ ਕਰੋ' ਫਾਰਮ ਲੱਭ ਸਕਦੇ ਹੋ। ਵੇਰਵੇ ਭਰੋ ਅਤੇ 'ਅਸਾਈਨਮੈਂਟ ਅੱਪਲੋਡ ਕਰੋ' 'ਤੇ ਕਲਿੱਕ ਕਰੋ।", 'ਵਿਦਿਆਰਥੀ ਪ੍ਰਗਤੀ ਵਿਦਿਆਰਥੀਆਂ ਨੂੰ ਟਰੈਕ': "ਤੁਹਾਡੇ ਡੈਸ਼ਬੋਰਡ 'ਤੇ 'ਵਿਦਿਆਰਥੀ ਦੀ ਪ੍ਰਗਤੀ' ਸਾਰਣੀ ਹਰੇਕ ਵਿਦਿਆਰਥੀ ਦਾ ਨਾਮ, ਸਮੁੱਚੀ ਪ੍ਰਗਤੀ, ਅਤੇ ਆਖਰੀ ਸਰਗਰਮ ਸਮਾਂ ਦਰਸਾਉਂਦੀ ਹੈ।", 'ਔਫਲਾਈਨ ਇੰਟਰਨੈੱਟ': "ਤੁਸੀਂ ਪੰਨੇ ਦੇ ਸਿਖਰ 'ਤੇ 'ਔਫਲਾਈਨ ਮੋਡ' ਟੌਗਲ ਸਵਿੱਚ ਦੀ ਵਰਤੋਂ ਕਰ ਸਕਦੇ ਹੋ। ਜਦੋਂ ਇਹ ਚਾਲੂ ਹੁੰਦਾ ਹੈ, ਤਾਂ ਕੁਝ ਔਨਲਾਈਨ-ਸਿਰਫ਼ ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ ਅਯੋਗ ਹੋ ਸਕਦੀਆਂ ਹਨ।", 'ਭਾਸ਼ਾ ਪੰਜਾਬੀ ਅੰਗਰੇਜ਼ੀ': "ਅੰਗਰੇਜ਼ੀ ਅਤੇ ਪੰਜਾਬੀ ਵਿੱਚ ਬਦਲਣ ਲਈ ਪੰਨੇ ਦੇ ਉੱਪਰ-ਸੱਜੇ ਪਾਸੇ ਭਾਸ਼ਾ ਸਵਿੱਚਰ ਡ੍ਰੌਪਡਾਉਨ ਮੀਨੂ ਦੀ ਵਰਤੋਂ ਕਰੋ।" } } };
+    const toggleChatWindow = () => { chatWindow.classList.toggle('active'); if (chatWindow.classList.contains('active')) { addMessageToChat('bot', chatBotData[languageSwitcher.value].greeting); } else { chatMessages.innerHTML = ''; } };
+    const addMessageToChat = (sender, message) => { const messageElement = document.createElement('div'); messageElement.classList.add('chat-message', sender === 'user' ? 'user-message' : 'bot-message'); messageElement.textContent = message; chatMessages.appendChild(messageElement); chatMessages.scrollTop = chatMessages.scrollHeight; };
+    const getBotResponse = (userInput) => { const lang = languageSwitcher.value; const lowerInput = userInput.toLowerCase(); const responses = chatBotData[lang].responses; for (const keywords in responses) { const keywordArray = keywords.split(' '); if (keywordArray.some(keyword => lowerInput.includes(keyword))) { return responses[keywords]; } } return chatBotData[lang].default; };
+    const handleSendMessage = () => { const userInput = chatInput.value.trim(); if (userInput === '') return; addMessageToChat('user', userInput); chatInput.value = ''; setTimeout(() => { const botResponse = getBotResponse(userInput); addMessageToChat('bot', botResponse); }, 500); };
+    chatFab.addEventListener('click', toggleChatWindow);
+    chatCloseBtn.addEventListener('click', toggleChatWindow);
+    chatSendBtn.addEventListener('click', handleSendMessage);
+    chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') { handleSendMessage(); } });
+
+    setLanguage(languageSwitcher.value);
+});
+</script>
+
+</body>
+</html>

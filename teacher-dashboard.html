@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en-IN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Dashboard</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-blue: #007bff;
+            --secondary-green: #28a745;
+            --light-bg: #f0f4f8;
+            --white-card: #ffffff;
+            --dark-text: #333;
+            --light-text: #666;
+        }
+
+        /* --- Basic & Header Styles (Consistent with student dashboard) --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: var(--light-bg);
+            color: var(--dark-text);
+        }
+        .dashboard-container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .welcome-header {
+            background: linear-gradient(135deg, #0052D4 0%, #4364F7 50%, #6FB1FC 100%);
+            color: white; padding: 25px; border-radius: 16px; margin-bottom: 30px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+        .welcome-header-top { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 15px; }
+        .welcome-header h1 { font-size: 2rem; font-weight: 800; }
+        .welcome-header p { font-size: 1.1rem; opacity: 0.9; }
+        .header-controls { display: flex; align-items: center; flex-wrap: wrap; gap: 15px; }
+        #language-switcher {
+            background-color: rgba(255, 255, 255, 0.2); color: white; border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 12px; border-radius: 25px; font-family: 'Nunito', sans-serif; font-weight: 700; cursor: pointer;
+        }
+        #language-switcher option { color: black; }
+        .logout-btn {
+            background-color: rgba(255, 255, 255, 0.2); color: white; padding: 10px 20px;
+            border-radius: 25px; text-decoration: none; font-weight: 700; transition: background-color 0.2s; white-space: nowrap;
+        }
+        .logout-btn:hover { background-color: rgba(255, 255, 255, 0.3); }
+        .section-title { font-size: 1.8rem; font-weight: 800; color: var(--dark-text); margin-bottom: 20px; padding-bottom: 10px; border-bottom: 3px solid var(--primary-blue); }
+        
+        /* --- Overview Stats Cards --- */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        .stat-card {
+            background-color: var(--white-card);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            text-align: center;
+        }
+        .stat-card .stat-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--primary-blue);
+        }
+        .stat-card .stat-label {
+            font-size: 1rem;
+            color: var(--light-text);
+            font-weight: 700;
+        }
+
+        /* --- Teacher Tools Layout --- */
+        .teacher-tools-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        @media (min-width: 992px) {
+            .teacher-tools-container {
+                grid-template-columns: 1fr 2fr; /* Uploader on left, table on right for larger screens */
+            }
+        }
+
+        /* --- Upload Form Card --- */
+        .upload-card {
+            background-color: var(--white-card);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+        .upload-card .form-group { margin-bottom: 20px; }
+        .upload-card label { display: block; font-weight: 700; margin-bottom: 8px; }
+        .upload-card input, .upload-card select, .upload-card textarea {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-family: 'Nunito', sans-serif;
+            font-size: 1rem;
+        }
+        .upload-card textarea { min-height: 100px; resize: vertical; }
+        .upload-card .btn {
+            width: 100%; padding: 15px; border: none; border-radius: 10px;
+            background: linear-gradient(45deg, #4364F7, #0052D4); color: white;
+            font-size: 1rem; font-weight: 700; cursor: pointer; transition: opacity 0.2s;
+        }
+        .upload-card .btn:hover { opacity: 0.9; }
+
+        /* --- Student Progress Table --- */
+        .table-container {
+            background-color: var(--white-card);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            overflow-x: auto; /* Ensures table is scrollable on small screens */
+        }
+        .progress-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 600px; /* Prevents squishing on small screens before scrolling */
+        }
+        .progress-table th, .progress-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        .progress-table thead { background-color: #f8f9fa; }
+        .progress-table th { font-weight: 800; }
+        .progress-table tbody tr:hover { background-color: #f8f9fa; }
+        .table-progress-bar { width: 100%; background-color: #e9ecef; border-radius: 25px; }
+        .table-progress-bar div { height: 10px; border-radius: 25px; background-color: var(--secondary-green); }
+
+        /* --- CHATBOT STYLES --- */
+        #chat-fab { position: fixed; bottom: 25px; right: 25px; width: 60px; height: 60px; background: linear-gradient(45deg, #007bff, #0056b3); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); cursor: pointer; z-index: 1001; transition: transform 0.2s; }
+        #chat-fab:hover { transform: scale(1.1); }
+        #chat-fab svg { width: 32px; height: 32px; color: white; }
+        #chat-window { display: none; position: fixed; bottom: 100px; right: 25px; width: 350px; max-width: 90vw; height: 500px; max-height: 70vh; background-color: var(--white-card); border-radius: 16px; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15); z-index: 1000; display: none; flex-direction: column; overflow: hidden; }
+        #chat-window.active { display: flex; }
+        .chat-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px; font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
+        .chat-header-title { font-size: 1.1rem; }
+        #chat-close-btn { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
+        .chat-messages { flex-grow: 1; padding: 15px; overflow-y: auto; background-color: #f0f4f8; }
+        .chat-message { padding: 10px 15px; border-radius: 18px; margin-bottom: 10px; max-width: 80%; line-height: 1.4; }
+        .user-message { background-color: var(--primary-blue); color: white; align-self: flex-end; margin-left: auto; border-bottom-right-radius: 4px; }
+        .bot-message { background-color: #e9ecef; color: var(--dark-text); align-self: flex-start; border-bottom-left-radius: 4px; }
+        .chat-input-container { padding: 10px; border-top: 1px solid #eee; display: flex; gap: 10px; }
+        #chat-input { flex-grow: 1; border: 1px solid #ccc; border-radius: 20px; padding: 10px 15px; font-size: 1rem; font-family: 'Nunito', sans-serif; }
+        #chat-send-btn { border: none; background-color: var(--primary-blue); color: white; font-weight: 700; border-radius: 20px; padding: 10px 20px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="dashboard-container">
+    <header class="welcome-header">
+        <div class="welcome-header-top">
+            <div>
+                <h1 data-key="welcome_teacher">Welcome, Teacher!</h1>
+                <p data-key="dashboard_subtitle">Here's an overview of your class today.</p>
+            </div>
+            <div class="header-controls">
+                <select id="language-switcher">
+                    <option value="en">English</option>
+                    <option value="pa">ਪੰਜਾਬੀ</option>
+                </select>
+                <a href="login-T.html" class="logout-btn" data-key="logout_btn">Logout</a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section>
+            <h2 class="section-title" data-key="overview_title">Class Overview</h2>
+            <div class="stats-container">
+                <div class="stat-card">
+                    <div class="stat-number">35</div>
+                    <div class="stat-label" data-key="total_students">Total Students</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">65%</div>
+                    <div class="stat-label" data-key="average_progress">Average Progress</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">8</div>
+                    <div class="stat-label" data-key="assignments_to_grade">Assignments to Grade</div>
+                </div>
+            </div>
+        </section>
+
+        <div class="teacher-tools-container">
+            <section class="upload-card">
+                <h2 class="section-title" data-key="add_assignment_title">Add New Assignment</h2>
+                <form id="upload-form">
+                    <div class="form-group">
+                        <label for="assignment-title" data-key="assignment_title_label">Assignment Title</label>
+                        <input type="text" id="assignment-title" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="subject-select" data-key="subject_label">Subject</label>
+                        <select id="subject-select">
+                            <option data-key="subject_math">Mathematics</option>
+                            <option data-key="subject_science">Science</option>
+                            <option data-key="subject_english">English</option>
+                            <option data-key="subject_punjabi">Punjabi</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="instructions" data-key="instructions_label">Instructions</label>
+                        <textarea id="instructions"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="due-date" data-key="due_date_label">Due Date</label>
+                        <input type="date" id="due-date">
+                    </div>
+                    <div class="form-group">
+                        <label for="file-upload" data-key="attach_file_label">Attach File (Optional)</label>
+                        <input type="file" id="file-upload">
+                    </div>
+                    <button type="submit" class="btn" data-key="upload_btn">Upload Assignment</button>
+                </form>
+            </section>
+
+            <section class="table-container">
+                <h2 class="section-title" data-key="student_progress_title">Student Progress</h2>
+                <table class="progress-table">
+                    <thead>
+                        <tr>
+                            <th data-key="table_header_name">Student Name</th>
+                            <th data-key="table_header_progress">Overall Progress</th>
+                            <th data-key="table_header_last_active">Last Active</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Gurpreet Kaur</td>
+                            <td>
+                                <div class="table-progress-bar"><div style="width: 85%;"></div></div>
+                            </td>
+                            <td>Today</td>
+                        </tr>
+                        <tr>
+                            <td>Manpreet Singh</td>
+                            <td>
+                                <div class="table-progress-bar"><div style="width: 70%;"></div></div>
+                            </td>
+                            <td>Yesterday</td>
+                        </tr>
+                        <tr>
+                            <td>Harleen Kaur</td>
+                            <td>
+                                <div class="table-progress-bar"><div style="width: 40%;"></div></div>
+                            </td>
+                            <td>3 days ago</td>
+                        </tr>
+                        <tr>
+                            <td>Jaskaran Singh</td>
+                            <td>
+                                <div class="table-progress-bar"><div style="width: 95%;"></div></div>
+                            </td>
+                            <td>Today</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+        </div>
+    </main>
+</div>
+
+<div id="chat-fab">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+        <path d="M8 15c4.418 0 8-3.134 8-7s-3.582-7-8-7-8 3.134-8 7c0 1.76.743 3.37 1.97 4.6-.097 1.016-.417 2.13-.771 2.966-.079.186.074.394.273.362 2.256-.37 3.597-.938 4.18-1.234A9.06 9.06 0 0 0 8 15z"/>
+    </svg>
+</div>
+<div id="chat-window">
+    <div class="chat-header">
+        <span class="chat-header-title" data-key="chatbot_title">Chat Help</span>
+        <button id="chat-close-btn">&times;</button>
+    </div>
+    <div class="chat-messages" id="chat-messages"></div>
+    <div class="chat-input-container">
+        <input type="text" id="chat-input" data-key-placeholder="chatbot_placeholder">
+        <button id="chat-send-btn" data-key="chatbot_send_btn">Send</button>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const languageSwitcher = document.getElementById('language-switcher');
+    const translations = {
+        en: {
+            welcome_teacher: 'Welcome, Teacher!',
+            dashboard_subtitle: "Here's an overview of your class today.",
+            logout_btn: 'Logout',
+            overview_title: 'Class Overview',
+            total_students: 'Total Students',
+            average_progress: 'Average Progress',
+            assignments_to_grade: 'Assignments to Grade',
+            add_assignment_title: 'Add New Assignment',
+            assignment_title_label: 'Assignment Title',
+            subject_label: 'Subject',
+            subject_math: 'Mathematics',
+            subject_science: 'Science',
+            subject_english: 'English',
+            subject_punjabi: 'Punjabi',
+            instructions_label: 'Instructions',
+            due_date_label: 'Due Date',
+            attach_file_label: 'Attach File (Optional)',
+            upload_btn: 'Upload Assignment',
+            student_progress_title: 'Student Progress',
+            table_header_name: 'Student Name',
+            table_header_progress: 'Overall Progress',
+            table_header_last_active: 'Last Active',
+            chatbot_title: 'Chat Help',
+            chatbot_placeholder: 'Type a message...',
+            chatbot_send_btn: 'Send'
+        },
+        pa: {
+            welcome_teacher: 'ਜੀ ਆਇਆਂ ਨੂੰ, ਅਧਿਆਪਕ ਜੀ!',
+            dashboard_subtitle: 'ਅੱਜ ਤੁਹਾਡੀ ਜਮਾਤ ਦੀ ਸੰਖੇਪ ਜਾਣਕਾਰੀ ਇੱਥੇ ਹੈ।',
+            logout_btn: 'ਲੌਗ ਆਊਟ',
+            overview_title: 'ਜਮਾਤ ਦੀ ਸੰਖੇਪ ਜਾਣਕਾਰੀ',
+            total_students: 'ਕੁੱਲ ਵਿਦਿਆਰਥੀ',
+            average_progress: 'ਔਸਤ ਪ੍ਰਗਤੀ',
+            assignments_to_grade: 'ਜਾਂਚਣ ਲਈ ਅਸਾਈਨਮੈਂਟਾਂ',
+            add_assignment_title: 'ਨਵੀਂ ਅਸਾਈਨਮੈਂਟ ਸ਼ਾਮਲ ਕਰੋ',
+            assignment_title_label: 'ਅਸਾਈਨਮੈਂਟ ਦਾ ਸਿਰਲੇਖ',
+            subject_label: 'ਵਿਸ਼ਾ',
+            subject_math: 'ਗਣਿਤ',
+            subject_science: 'ਵਿਗਿਆਨ',
+            subject_english: 'ਅੰਗਰੇਜ਼ੀ',
+            subject_punjabi: 'ਪੰਜਾਬੀ',
+            instructions_label: 'ਹਦਾਇਤਾਂ',
+            due_date_label: 'ਆਖਰੀ ਮਿਤੀ',
+            attach_file_label: 'ਫਾਈਲ ਨੱਥੀ ਕਰੋ (ਵਿਕਲਪਿਕ)',
+            upload_btn: 'ਅਸਾਈਨਮੈਂਟ ਅੱਪਲੋਡ ਕਰੋ',
+            student_progress_title: 'ਵਿਦਿਆਰਥੀ ਦੀ ਪ੍ਰਗਤੀ',
+            table_header_name: 'ਵਿਦਿਆਰਥੀ ਦਾ ਨਾਮ',
+            table_header_progress: 'ਸਮੁੱਚੀ ਪ੍ਰਗਤੀ',
+            table_header_last_active: 'ਆਖਰੀ ਵਾਰ ਸਰਗਰਮ',
+            chatbot_title: 'ਚੈਟ ਮਦਦ',
+            chatbot_placeholder: 'ਇੱਕ ਸੁਨੇਹਾ ਟਾਈਪ ਕਰੋ...',
+            chatbot_send_btn: 'ਭੇਜੋ'
+        }
+    };
+
+    const setLanguage = (language) => {
+        document.querySelectorAll('[data-key]').forEach(element => {
+            const key = element.getAttribute('data-key');
+            if (translations[language][key]) {
+                element.textContent = translations[language][key];
+            }
+        });
+         document.querySelectorAll('[data-key-placeholder]').forEach(element => {
+            const key = element.getAttribute('data-key-placeholder');
+            if (translations[language][key]) {
+                element.placeholder = translations[language][key];
+            }
+        });
+        document.documentElement.lang = language === 'pa' ? 'pa-IN' : 'en-IN';
+    };
+
+    languageSwitcher.addEventListener('change', (event) => setLanguage(event.target.value));
+
+    const uploadForm = document.getElementById('upload-form');
+    uploadForm.addEventListener('submit', (event) => {
+        event.preventDefault(); 
+        const currentLang = languageSwitcher.value;
+        const alertMessage = currentLang === 'pa' 
+            ? 'ਅਸਾਈਨਮੈਂਟ ਸਫਲਤਾਪੂਰਵਕ ਅੱਪਲੋਡ ਹੋ ਗਈ ਹੈ!' 
+            : 'Assignment uploaded successfully!';
+        
+        alert(alertMessage);
+        uploadForm.reset(); 
+    });
+
+    // --- CHATBOT SCRIPT ---
+    const chatFab = document.getElementById('chat-fab');
+    const chatWindow = document.getElementById('chat-window');
+    const chatCloseBtn = document.getElementById('chat-close-btn');
+    const chatMessages = document.getElementById('chat-messages');
+    const chatInput = document.getElementById('chat-input');
+    const chatSendBtn = document.getElementById('chat-send-btn');
+    const chatBotData = { en: { default: "Sorry, I don't understand. Can you ask about navigating the website, like 'how to add an assignment' or 'where is student progress'?", greeting: "Hello! As a teacher, you can ask me how to upload assignments or track student progress.", responses: { 'math progress journey': "To see your Math progress, go to the Student Dashboard and click the 'Continue Lesson' button on the Mathematics card.", 'english progress journey': "To see your English progress, go to the Student Dashboard and click the button on the English card.", 'science progress journey': "To see your Science progress, go to the Student Dashboard and click the button on the Science card.", 'story books read library': "You can find story books in the Library section on your dashboard. Click the 'Read Now' button under 'Story Books'.", 'typing practice keyboard': "Go to the 'Digital Literacy Hub' from your dashboard. Inside, you can find the 'Typing Practice' module.", 'safe safety internet online': "The 'Digital Literacy Hub' has a section on 'Staying Safe Online'. You can access it from the student dashboard.", 'add new assignment upload': "On the Teacher Dashboard, you can find the 'Add New Assignment' form. Fill in the details and click 'Upload Assignment'.", 'student progress see students track': "The 'Student Progress' table on your dashboard shows the name, overall progress, and last active time for each student.", 'offline internet': "You can use the 'Offline Mode' toggle switch at the top of the page. When active, some online-only features might be disabled.", 'language punjabi english': "Use the language switcher dropdown menu at the top-right of the page to switch between English and Punjabi." } }, pa: { default: "ਮਾਫ਼ ਕਰਨਾ, ਮੈਨੂੰ ਸਮਝ ਨਹੀਂ ਆਇਆ। ਕੀ ਤੁਸੀਂ ਵੈੱਬਸਾਈਟ ਨੈਵੀਗੇਟ ਕਰਨ ਬਾਰੇ ਪੁੱਛ ਸਕਦੇ ਹੋ, ਜਿਵੇਂ ਕਿ 'ਇੱਕ ਅਸਾਈਨਮੈਂਟ ਕਿਵੇਂ ਸ਼ਾਮਲ ਕਰੀਏ' ਜਾਂ 'ਵਿਦਿਆਰਥੀ ਦੀ ਪ੍ਰਗਤੀ ਕਿੱਥੇ ਹੈ'?", greeting: "ਸਤਿ ਸ਼੍ਰੀ ਅਕਾਲ! ਇੱਕ ਅਧਿਆਪਕ ਵਜੋਂ, ਤੁਸੀਂ ਮੈਨੂੰ ਪੁੱਛ ਸਕਦੇ ਹੋ ਕਿ ਅਸਾਈਨਮੈਂਟਾਂ ਨੂੰ ਕਿਵੇਂ ਅਪਲੋਡ ਕਰਨਾ ਹੈ ਜਾਂ ਵਿਦਿਆਰਥੀ ਦੀ ਪ੍ਰਗਤੀ ਨੂੰ ਕਿਵੇਂ ਟਰੈਕ ਕਰਨਾ ਹੈ।", responses: { 'ਗਣਿਤ ਪ੍ਰਗਤੀ ਸਫ਼ਰ': "ਆਪਣੀ ਗਣਿਤ ਦੀ ਪ੍ਰਗਤੀ ਦੇਖਣ ਲਈ, ਵਿਦਿਆਰਥੀ ਡੈਸ਼ਬੋਰਡ 'ਤੇ ਜਾਓ ਅਤੇ ਗਣਿਤ ਕਾਰਡ 'ਤੇ 'ਪਾਠ ਜਾਰੀ ਰੱਖੋ' ਬਟਨ 'ਤੇ ਕਲਿੱਕ ਕਰੋ।", 'ਅੰਗਰੇਜ਼ੀ ਪ੍ਰਗਤੀ ਸਫ਼ਰ': "ਆਪਣੀ ਅੰਗਰੇਜ਼ੀ ਦੀ ਪ੍ਰਗਤੀ ਦੇਖਣ ਲਈ, ਵਿਦਿਆਰਥੀ ਡੈਸ਼ਬੋਰਡ 'ਤੇ ਜਾਓ ਅਤੇ ਅੰਗਰੇਜ਼ੀ ਕਾਰਡ 'ਤੇ ਬਟਨ 'ਤੇ ਕਲਿੱਕ ਕਰੋ।", 'ਵਿਗਿਆਨ ਪ੍ਰਗਤੀ ਸਫ਼ਰ': "ਆਪਣੀ ਵਿਗਿਆਨ ਦੀ ਪ੍ਰਗਤੀ ਦੇਖਣ ਲਈ, ਵਿਦਿਆਰਥੀ ਡੈਸ਼ਬੋਰਡ 'ਤੇ ਜਾਓ ਅਤੇ ਵਿਗਿਆਨ ਕਾਰਡ 'ਤੇ ਬਟਨ 'ਤੇ ਕਲਿੱਕ ਕਰੋ।", 'ਕਹਾਣੀ ਕਿਤਾਬਾਂ ਪੜ੍ਹੋ ਲਾਇਬ੍ਰੇਰੀ': "ਤੁਸੀਂ ਆਪਣੇ ਡੈਸ਼ਬੋਰਡ 'ਤੇ ਲਾਇਬ੍ਰੇਰੀ ਸੈਕਸ਼ਨ ਵਿੱਚ ਕਹਾਣੀਆਂ ਦੀਆਂ ਕਿਤਾਬਾਂ ਲੱਭ ਸਕਦੇ ਹੋ। 'ਕਹਾਣੀਆਂ ਦੀਆਂ ਕਿਤਾਬਾਂ' ਦੇ ਹੇਠਾਂ 'ਹੁਣੇ ਪੜ੍ਹੋ' ਬਟਨ 'ਤੇ ਕਲਿੱਕ ਕਰੋ।", 'ਟਾਈਪਿੰਗ ਅਭਿਆਸ ਕੀ-ਬੋਰਡ': "ਆਪਣੇ ਡੈਸ਼ਬੋਰਡ ਤੋਂ 'ਡਿਜੀਟਲ ਸਾਖਰਤਾ ਕੇਂਦਰ' 'ਤੇ ਜਾਓ। ਅੰਦਰ, ਤੁਸੀਂ 'ਟਾਈਪਿੰਗ ਅਭਿਆਸ' ਮੋਡੀਊਲ ਲੱਭ ਸਕਦੇ ਹੋ।", 'ਸੁਰੱਖਿਅਤ ਸੁਰੱਖਿਆ ਇੰਟਰਨੈੱਟ ਆਨਲਾਈਨ': "'ਡਿਜੀਟਲ ਸਾਖਰਤਾ ਕੇਂਦਰ' ਵਿੱਚ 'ਆਨਲਾਈਨ ਸੁਰੱਖਿਅਤ ਰਹਿਣਾ' ਬਾਰੇ ਇੱਕ ਸੈਕਸ਼ਨ ਹੈ। ਤੁਸੀਂ ਇਸਨੂੰ ਵਿਦਿਆਰਥੀ ਡੈਸ਼ਬੋਰਡ ਤੋਂ ਐਕਸੈਸ ਕਰ ਸਕਦੇ ਹੋ।", 'ਨਵਾਂ ਅਸਾਈਨਮੈਂਟ ਸ਼ਾਮਲ ਅੱਪਲੋਡ': "ਅਧਿਆਪਕ ਡੈਸ਼ਬੋਰਡ 'ਤੇ, ਤੁਸੀਂ 'ਨਵੀਂ ਅਸਾਈਨਮੈਂਟ ਸ਼ਾਮਲ ਕਰੋ' ਫਾਰਮ ਲੱਭ ਸਕਦੇ ਹੋ। ਵੇਰਵੇ ਭਰੋ ਅਤੇ 'ਅਸਾਈਨਮੈਂਟ ਅੱਪਲੋਡ ਕਰੋ' 'ਤੇ ਕਲਿੱਕ ਕਰੋ।", 'ਵਿਦਿਆਰਥੀ ਪ੍ਰਗਤੀ ਵਿਦਿਆਰਥੀਆਂ ਨੂੰ ਟਰੈਕ': "ਤੁਹਾਡੇ ਡੈਸ਼ਬੋਰਡ 'ਤੇ 'ਵਿਦਿਆਰਥੀ ਦੀ ਪ੍ਰਗਤੀ' ਸਾਰਣੀ ਹਰੇਕ ਵਿਦਿਆਰਥੀ ਦਾ ਨਾਮ, ਸਮੁੱਚੀ ਪ੍ਰਗਤੀ, ਅਤੇ ਆਖਰੀ ਸਰਗਰਮ ਸਮਾਂ ਦਰਸਾਉਂਦੀ ਹੈ।", 'ਔਫਲਾਈਨ ਇੰਟਰਨੈੱਟ': "ਤੁਸੀਂ ਪੰਨੇ ਦੇ ਸਿਖਰ 'ਤੇ 'ਔਫਲਾਈਨ ਮੋਡ' ਟੌਗਲ ਸਵਿੱਚ ਦੀ ਵਰਤੋਂ ਕਰ ਸਕਦੇ ਹੋ। ਜਦੋਂ ਇਹ ਚਾਲੂ ਹੁੰਦਾ ਹੈ, ਤਾਂ ਕੁਝ ਔਨਲਾਈਨ-ਸਿਰਫ਼ ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ ਅਯੋਗ ਹੋ ਸਕਦੀਆਂ ਹਨ।", 'ਭਾਸ਼ਾ ਪੰਜਾਬੀ ਅੰਗਰੇਜ਼ੀ': "ਅੰਗਰੇਜ਼ੀ ਅਤੇ ਪੰਜਾਬੀ ਵਿੱਚ ਬਦਲਣ ਲਈ ਪੰਨੇ ਦੇ ਉੱਪਰ-ਸੱਜੇ ਪਾਸੇ ਭਾਸ਼ਾ ਸਵਿੱਚਰ ਡ੍ਰੌਪਡਾਉਨ ਮੀਨੂ ਦੀ ਵਰਤੋਂ ਕਰੋ।" } } };
+    const toggleChatWindow = () => { chatWindow.classList.toggle('active'); if (chatWindow.classList.contains('active')) { addMessageToChat('bot', chatBotData[languageSwitcher.value].greeting); } else { chatMessages.innerHTML = ''; } };
+    const addMessageToChat = (sender, message) => { const messageElement = document.createElement('div'); messageElement.classList.add('chat-message', sender === 'user' ? 'user-message' : 'bot-message'); messageElement.textContent = message; chatMessages.appendChild(messageElement); chatMessages.scrollTop = chatMessages.scrollHeight; };
+    const getBotResponse = (userInput) => { const lang = languageSwitcher.value; const lowerInput = userInput.toLowerCase(); const responses = chatBotData[lang].responses; for (const keywords in responses) { const keywordArray = keywords.split(' '); if (keywordArray.some(keyword => lowerInput.includes(keyword))) { return responses[keywords]; } } return chatBotData[lang].default; };
+    const handleSendMessage = () => { const userInput = chatInput.value.trim(); if (userInput === '') return; addMessageToChat('user', userInput); chatInput.value = ''; setTimeout(() => { const botResponse = getBotResponse(userInput); addMessageToChat('bot', botResponse); }, 500); };
+    chatFab.addEventListener('click', toggleChatWindow);
+    chatCloseBtn.addEventListener('click', toggleChatWindow);
+    chatSendBtn.addEventListener('click', handleSendMessage);
+    chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') { handleSendMessage(); } });
+    
+    setLanguage(languageSwitcher.value); // Set initial language for the page and chatbot UI
+});
+</script>
+
+</body>
+</html>

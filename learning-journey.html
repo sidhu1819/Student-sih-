@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en-IN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Learning Journey</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary-blue: #007bff; --secondary-green: #28a745; --light-bg: #f0f4f8; --white-card: #ffffff; --dark-text: #333; --light-text: #666; --locked-grey: #adb5bd; --header-purple: #667eea; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Nunito', sans-serif; background-color: var(--light-bg); color: var(--dark-text); }
+        #offline-banner { display: none; background-color: #ffc107; color: #333; text-align: center; padding: 10px; font-weight: 700; position: sticky; top: 0; z-index: 1000; align-items: center; justify-content: center; gap: 10px; }
+        .dashboard-container { max-width: 900px; margin: 0 auto; padding: 20px; }
+        .welcome-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 16px; margin-bottom: 30px; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1); }
+        .welcome-header-top { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        .header-controls { display: flex; align-items: center; flex-wrap: wrap; gap: 15px; }
+        #language-switcher { background-color: rgba(255, 255, 255, 0.2); color: white; border: 1px solid rgba(255, 255, 255, 0.3); padding: 8px 12px; border-radius: 25px; font-weight: 700; cursor: pointer; }
+        #language-switcher option { color: black; }
+        .header-link { background-color: rgba(255, 255, 255, 0.2); color: white; padding: 10px 20px; border-radius: 25px; text-decoration: none; font-weight: 700; }
+        .offline-toggle-container { display: flex; align-items: center; gap: 10px; color: white; }
+        .offline-toggle-container span { font-weight: 700; font-size: 0.9rem; }
+        .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
+        .switch input { display: none; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 28px; }
+        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--secondary-green); }
+        input:checked + .slider:before { transform: translateX(22px); }
+        .tab-nav { display: flex; background-color: #e9ecef; border-radius: 12px; padding: 5px; margin-bottom: 30px; }
+        .tab-btn { flex: 1; padding: 15px; border: none; background-color: transparent; font-family: 'Nunito', sans-serif; font-size: 1.1rem; font-weight: 800; color: var(--light-text); cursor: pointer; transition: background-color 0.3s, color 0.3s; border-radius: 8px; }
+        .tab-btn.active { background-color: var(--white-card); color: var(--header-purple); box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); }
+        .content-pane { display: none; animation: fadeIn 0.5s; }
+        .content-pane.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .journey-header { background-color: var(--white-card); padding: 25px; border-radius: 12px; margin-bottom: 40px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); }
+        .journey-header h1 { font-size: 2.2rem; color: var(--primary-blue); margin-bottom: 15px; }
+        .progress-bar-container { width: 100%; background-color: #e9ecef; border-radius: 25px; }
+        .progress-bar { height: 15px; border-radius: 25px; background: linear-gradient(to right, #00c6ff, var(--primary-blue)); }
+        .progress-label { font-size: 1rem; margin-top: 8px; font-weight: 700; color: var(--light-text); }
+        .timeline { list-style: none; padding: 20px 0; position: relative; }
+        .timeline::before { content: ''; position: absolute; top: 0; left: 20px; height: 100%; width: 4px; background: #e9ecef; }
+        .timeline-item { margin-bottom: 30px; position: relative; padding-left: 60px; }
+        .timeline-item::before { content: ''; position: absolute; left: 5px; top: 5px; width: 30px; height: 30px; border-radius: 50%; background-color: var(--white-card); border: 4px solid #e9ecef; z-index: 1; display: flex; align-items: center; justify-content: center; }
+        .timeline-item-content { background-color: var(--white-card); padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); }
+        .timeline-item h3 { font-size: 1.4rem; color: var(--dark-text); margin-bottom: 10px; }
+        .timeline-item p { color: var(--light-text); margin-bottom: 20px; }
+        .timeline-item .btn { display: inline-block; padding: 10px 25px; border: none; border-radius: 25px; color: white; font-weight: 700; text-decoration: none; cursor: pointer; }
+        .status-completed .timeline-item-content { border-left: 5px solid var(--secondary-green); }
+        .status-completed::before { border-color: var(--secondary-green); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2328a745' viewBox='0 0 16 16'%3E%3Cpath d='M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425a.247.247 0 0 1 .02-.022Z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: center; }
+        .status-completed .btn { background-color: #6c757d; }
+        .status-inprogress .timeline-item-content { border-left: 5px solid var(--primary-blue); }
+        .status-inprogress::before { border-color: var(--primary-blue); background-color: var(--primary-blue); }
+        .status-inprogress .btn { background-color: var(--primary-blue); }
+        .status-locked { opacity: 0.6; }
+        .status-locked .timeline-item-content { border-left: 5px solid var(--locked-grey); }
+        .status-locked::before { border-color: var(--locked-grey); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23adb5bd' viewBox='0 0 16 16'%3E%3Cpath d='M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: center; }
+        .status-locked .btn { background-color: var(--locked-grey); cursor: not-allowed; }
+        #chat-fab { position: fixed; bottom: 25px; right: 25px; width: 60px; height: 60px; background: linear-gradient(45deg, #007bff, #0056b3); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); cursor: pointer; z-index: 1001; transition: transform 0.2s; }
+        #chat-fab:hover { transform: scale(1.1); }
+        #chat-fab svg { width: 32px; height: 32px; color: white; }
+        #chat-window { display: none; position: fixed; bottom: 100px; right: 25px; width: 350px; max-width: 90vw; height: 500px; max-height: 70vh; background-color: var(--white-card); border-radius: 16px; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15); z-index: 1000; display: none; flex-direction: column; overflow: hidden; }
+        #chat-window.active { display: flex; }
+        .chat-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px; font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
+        .chat-header-title { font-size: 1.1rem; }
+        #chat-close-btn { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
+        .chat-messages { flex-grow: 1; padding: 15px; overflow-y: auto; background-color: #f0f4f8; }
+        .chat-message { padding: 10px 15px; border-radius: 18px; margin-bottom: 10px; max-width: 80%; line-height: 1.4; }
+        .user-message { background-color: var(--primary-blue); color: white; align-self: flex-end; margin-left: auto; border-bottom-right-radius: 4px; }
+        .bot-message { background-color: #e9ecef; color: var(--dark-text); align-self: flex-start; border-bottom-left-radius: 4px; }
+        .chat-input-container { padding: 10px; border-top: 1px solid #eee; display: flex; gap: 10px; }
+        #chat-input { flex-grow: 1; border: 1px solid #ccc; border-radius: 20px; padding: 10px 15px; font-size: 1rem; font-family: 'Nunito', sans-serif; }
+        #chat-send-btn { border: none; background-color: var(--primary-blue); color: white; font-weight: 700; border-radius: 20px; padding: 10px 20px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div id="offline-banner"><span data-key="offline_banner_text">Offline Mode Active</span></div>
+
+<div class="dashboard-container">
+    <header class="welcome-header">
+        <div class="welcome-header-top">
+            <a href="student-dashboard.html" class="header-link" data-key="back_to_dashboard">← Back to Dashboard</a>
+            <div class="header-controls">
+                <div class="offline-toggle-container">
+                    <span data-key="offline_mode_label">Offline Mode</span>
+                    <label class="switch"><input type="checkbox" id="offline-toggle"><span class="slider"></span></label>
+                </div>
+                <select id="language-switcher">
+                    <option value="en">English</option>
+                    <option value="pa">ਪੰਜਾਬੀ</option>
+                </select>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="tab-nav">
+            <button class="tab-btn" data-tab="math" data-key="tab_math">Mathematics</button>
+            <button class="tab-btn" data-tab="english" data-key="tab_english">English</button>
+            <button class="tab-btn" data-tab="science" data-key="tab_science">Science</button>
+        </div>
+
+        <div id="math" class="content-pane">
+            <div class="journey-header">
+                <h1 data-key="math_journey_title">Mathematics Learning Journey</h1>
+                <p class="progress-label" data-key="math_subject_progress">Subject Progress: 30%</p>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" style="width: 30%;"></div>
+                </div>
+            </div>
+            <ol class="timeline">
+                <li class="timeline-item status-completed" data-subject="math" data-chapter="1">
+                    <div class="timeline-item-content">
+                        <h3 data-key="math_chap1_title">Chapter 1: Numbers and Place Value</h3>
+                        <p data-key="math_chap1_desc">Understanding numbers up to 10,000 and their place values.</p>
+                        <a href="math-learning-journey.html#chapter1" class="btn" data-action="navigate" data-key="review_btn">Review</a>
+                    </div>
+                </li>
+                <li class="timeline-item status-completed" data-subject="math" data-chapter="2">
+                    <div class="timeline-item-content">
+                        <h3 data-key="math_chap2_title">Chapter 2: Addition & Subtraction</h3>
+                        <p data-key="math_chap2_desc">Mastering addition and subtraction with and without carrying over.</p>
+                        <a href="math-learning-journey.html#chapter2" class="btn" data-action="navigate" data-key="review_btn">Review</a>
+                    </div>
+                </li>
+                <li class="timeline-item status-inprogress" data-subject="math" data-chapter="3">
+                    <div class="timeline-item-content">
+                        <h3 data-key="math_chap3_title">Chapter 3: Multiplication</h3>
+                        <p data-key="math_chap3_desc">Learning multiplication tables and solving word problems.</p>
+                        <a href="math-learning-journey.html#chapter3" class="btn" data-action="navigate" data-key="continue_lesson_btn">Continue Lesson</a>
+                    </div>
+                </li>
+                <li class="timeline-item status-locked" data-subject="math" data-chapter="4">
+                    <div class="timeline-item-content">
+                        <h3 data-key="math_chap4_title">Chapter 4: Division</h3>
+                        <p data-key="math_chap4_desc">Understanding the concept of division and solving simple problems.</p>
+                        <a href="#" class="btn online-only" data-action="navigate" data-key="start_lesson_btn">Start Lesson</a>
+                    </div>
+                </li>
+                <li class="timeline-item status-locked" data-subject="math" data-chapter="5">
+                    <div class="timeline-item-content">
+                        <h3 data-key="math_chap5_title">Chapter 5: Fractions</h3>
+                        <p data-key="math_chap5_desc">Introduction to fractions, comparing, and ordering them.</p>
+                        <a href="#" class="btn online-only" data-action="navigate" data-key="start_lesson_btn">Start Lesson</a>
+                    </div>
+                </li>
+                <li class="timeline-item status-locked" data-subject="math" data-chapter="6">
+                    <div class="timeline-item-content">
+                        <h3 data-key="math_chap6_title">Chapter 6: Basic Geometry</h3>
+                        <p data-key="math_chap6_desc">Identifying basic shapes, lines, and angles.</p>
+                        <a href="#" class="btn online-only" data-action="navigate" data-key="start_lesson_btn">Start Lesson</a>
+                    </div>
+                </li>
+                <li class="timeline-item status-locked" data-subject="math" data-chapter="7">
+                    <div class="timeline-item-content">
+                        <h3 data-key="math_chap7_title">Chapter 7: Measurement</h3>
+                        <p data-key="math_chap7_desc">Learning about length, weight, and volume.</p>
+                        <a href="#" class="btn online-only" data-action="navigate" data-key="start_lesson_btn">Start Lesson</a>
+                    </div>
+                </li>
+                <li class="timeline-item status-locked" data-subject="math" data-chapter="8">
+                    <div class="timeline-item-content">
+                        <h3 data-key="math_chap8_title">Chapter 8: Data Handling</h3>
+                        <p data-key="math_chap8_desc">Creating and interpreting simple charts and graphs.</p>
+                        <a href="#" class="btn online-only" data-action="navigate" data-key="start_lesson_btn">Start Lesson</a>
+                    </div>
+                </li>
+            </ol>
+        </div>
+
+        <div id="english" class="content-pane">
+            <div class="journey-header">
+                <h1 data-key="eng_journey_title">English Learning Journey</h1>
+                <p class="progress-label" data-key="eng_subject_progress">Subject Progress: 25%</p>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" style="width: 25%;"></div>
+                </div>
+            </div>
+            <ol class="timeline">
+                <li class="timeline-item status-completed" data-subject="english" data-chapter="1">
+                    <div class="timeline-item-content">
+                        <h3 data-key="eng_chap1_title">Chapter 1: The Alphabet</h3>
+                        <p data-key="eng_chap1_desc">Recognizing and writing all capital and small letters.</p>
+                        <a href="english-learning-journey.html" class="btn" data-action="navigate" data-key="review_btn">Review</a>
+                    </div>
+                </li>
+                <li class="timeline-item status-inprogress" data-subject="english" data-chapter="2">
+                    <div class="timeline-item-content">
+                        <h3 data-key="eng_chap2_title">Chapter 2: Nouns & Pronouns</h3>
+                        <p data-key="eng_chap2_desc">Identifying naming words and words used in place of them.</p>
+                        <a href="english-learning-journey.html" class="btn" data-action="navigate" data-key="continue_lesson_btn">Continue Lesson</a>
+                    </div>
+                </li>
+                <li class="timeline-item status-locked" data-subject="english" data-chapter="3">
+                    <div class="timeline-item-content">
+                        <h3 data-key="eng_chap3_title">Chapter 3: Verbs</h3>
+                        <p data-key="eng_chap3_desc">Understanding action words and their usage in sentences.</p>
+                        <a href="#" class="btn online-only" data-action="navigate" data-key="start_lesson_btn">Start Lesson</a>
+                    </div>
+                </li>
+                <li class="timeline-item status-locked" data-subject="english" data-chapter="4">
+                    <div class="timeline-item-content">
+                        <h3 data-key="eng_chap4_title">Chapter 4: Adjectives</h3>
+                        <p data-key="eng_chap4_desc">Learning about describing words and their types.</p>
+                        <a href="#" class="btn online-only" data-action="navigate" data-key="start_lesson_btn">Start Lesson</a>
+                    </div>
+                </li>
+                <li class="timeline-item status-locked" data-subject="english" data-chapter="5">
+                    <div class="timeline-item-content">
+                        <h3 data-key="eng_chap5_title">Chapter 5: Sentence Structure</h3>
+                        <p data-key="eng_chap5_desc">How to form correct and meaningful sentences.</p>
+                        <a href="#" class="btn online-only" data-action="navigate" data-key="start_lesson_btn">Start Lesson</a>
+                    </div>
+                </li>
+                <li class="timeline-item status-locked" data-subject="english" data-chapter="6">
+                    <div class="timeline-item-content">
+                        <h3 data-key="eng_chap6_title">Chapter 6: Punctuation</h3>
+                        <p data-key="eng_chap6_desc">Using full stops, commas, and question marks correctly.</p>
+                        <a href="#" class="btn online-only" data-action="navigate" data-key="start_lesson_btn">Start Lesson</a>
+                    </div>
+                </li>
+                <li class="timeline-item status-locked" data-subject="english" data-chapter="7">
+                    <div class="timeline-item-content">
+                        <h3 data-key="eng_chap7_title">Chapter 7: Reading Comprehension</h3>
+                        <p data-key="eng_chap7_desc">Reading passages and answering related questions.</p>
+                        <a href="#" class="btn online-only" data-action="navigate" data-key="start_lesson_btn">Start Lesson</a>
+                    </div>
+                </li>
+            </ol>
+        </div>
+
+        <div id="science" class="content-pane">
+            <div class="journey-header">
+                <h1 data-key="sci_journey_title">Science Learning Journey</h1>
+                <p class="progress-label" data-key="sci_subject_progress">Subject Progress: 33%</p>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" style="width: 33%;"></div>
+                </div>
+            </div>
+            <ol class="timeline">
+                <li class="timeline-item status-completed" data-subject="science" data-chapter="1">
+                    <div class="timeline-item-content">
+                        <h3 data-key="sci_chap1_title">Chapter 1: Living & Non-Living Things</h3>
+                        <p data-key="sci_chap1_desc">Learning to differentiate between living and non-living things.</p>
+                        <a href="science-learning-journey.html" class="btn" data-action="navigate" data-key="review_btn">Review</a>
+                    </div>
+                </li>
+                <li class="timeline-item status-inprogress" data-subject="science" data-chapter="2">
+                    <div class="timeline-item-content">
+                        <h3 data-key="sci_chap2_title">Chapter 2: The Water Cycle</h3>
+                        <p data-key="sci_chap2_desc">Understanding evaporation, condensation, and precipitation.</p>
+                        <a href="science-learning-journey.html" class="btn" data-action="navigate" data-key="continue_lesson_btn">Continue Lesson</a>
+                    </div>
+                </li>
+                <li class="timeline-item status-locked" data-subject="science" data-chapter="3">
+                    <div class="timeline-item-content">
+                        <h3 data-key="sci_chap3_title">Chapter 3: Our Solar System</h3>
+                        <p data-key="sci_chap3_desc">Exploring the planets, sun, and moon in our solar system.</p>
+                        <a href="#" class="btn online-only" data-action="navigate" data-key="start_lesson_btn">Start Lesson</a>
+                    </div>
+                </li>
+                <li class="timeline-item status-locked" data-subject="science" data-chapter="4">
+                    <div class="timeline-item-content">
+                        <h3 data-key="sci_chap4_title">Chapter 4: Plants Around Us</h3>
+                        <p data-key="sci_chap4_desc">Learning about different types of plants and their parts.</p>
+                        <a href="#" class="btn online-only" data-action="navigate" data-key="start_lesson_btn">Start Lesson</a>
+                    </div>
+                </li>
+                <li class="timeline-item status-locked" data-subject="science" data-chapter="5">
+                    <div class="timeline-item-content">
+                        <h3 data-key="sci_chap5_title">Chapter 5: Animals and Their Homes</h3>
+                        <p data-key="sci_chap5_desc">Exploring different animals and where they live.</p>
+                        <a href="#" class="btn online-only" data-action="navigate" data-key="start_lesson_btn">Start Lesson</a>
+                    </div>
+                </li>
+                <li class="timeline-item status-locked" data-subject="science" data-chapter="6">
+                    <div class="timeline-item-content">
+                        <h3 data-key="sci_chap6_title">Chapter 6: States of Matter</h3>
+                        <p data-key="sci_chap6_desc">Understanding solids, liquids, and gases.</p>
+                        <a href="#" class="btn online-only" data-action="navigate" data-key="start_lesson_btn">Start Lesson</a>
+                    </div>
+                </li>
+                <li class="timeline-item status-locked" data-subject="science" data-chapter="7">
+                    <div class="timeline-item-content">
+                        <h3 data-key="sci_chap7_title">Chapter 7: The Human Body</h3>
+                        <p data-key="sci_chap7_desc">A basic introduction to the parts of the human body.</p>
+                        <a href="#" class="btn online-only" data-action="navigate" data-key="start_lesson_btn">Start Lesson</a>
+                    </div>
+                </li>
+            </ol>
+        </div>
+    </main>
+</div>
+
+<div id="chat-fab">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+        <path d="M8 15c4.418 0 8-3.134 8-7s-3.582-7-8-7-8 3.134-8 7c0 1.76.743 3.37 1.97 4.6-.097 1.016-.417 2.13-.771 2.966-.079.186.074.394.273.362 2.256-.37 3.597-.938 4.18-1.234A9.06 9.06 0 0 0 8 15z"/>
+    </svg>
+</div>
+<div id="chat-window">
+    <div class="chat-header">
+        <span class="chat-header-title" data-key="chatbot_title">Chat Help</span>
+        <button id="chat-close-btn">&times;</button>
+    </div>
+    <div class="chat-messages" id="chat-messages"></div>
+    <div class="chat-input-container">
+        <input type="text" id="chat-input" data-key-placeholder="chatbot_placeholder">
+        <button id="chat-send-btn" data-key="chatbot_send_btn">Send</button>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // --- Tab Switching Logic ---
+    const tabs = document.querySelectorAll('.tab-btn');
+    const panes = document.querySelectorAll('.content-pane');
+    const showPane = (tabId) => {
+        panes.forEach(pane => pane.classList.remove('active'));
+        tabs.forEach(tab => tab.classList.remove('active'));
+        const paneToShow = document.getElementById(tabId);
+        if (paneToShow) {
+            paneToShow.classList.add('active');
+            document.querySelector(`.tab-btn[data-tab="${tabId}"]`).classList.add('active');
+        }
+    };
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const tabId = tab.getAttribute('data-tab');
+            window.location.hash = tabId;
+            showPane(tabId);
+        });
+    });
+    const initialTab = window.location.hash.substring(1) || 'math';
+    showPane(initialTab);
+
+    // --- Lesson Navigation Logic ---
+    
+
+    // --- Language, Offline, and Chatbot Logic ---
+    const languageSwitcher = document.getElementById('language-switcher');
+    const offlineToggle = document.getElementById('offline-toggle');
+    const offlineBanner = document.getElementById('offline-banner');
+    const onlineOnlyButtons = document.querySelectorAll('.online-only');
+
+    const translations = {
+        en: {
+            back_to_dashboard: '← Back to Dashboard',
+            offline_mode_label: 'Offline Mode',
+            offline_banner_text: 'Offline Mode Active',
+            tab_math: 'Mathematics',
+            tab_english: 'English',
+            tab_science: 'Science',
+            review_btn: 'Review',
+            continue_lesson_btn: 'Continue Lesson',
+            start_lesson_btn: 'Start Lesson',
+            math_journey_title: 'Mathematics Learning Journey',
+            math_subject_progress: 'Subject Progress: 30%',
+            math_chap1_title: 'Chapter 1: Numbers and Place Value',
+            math_chap1_desc: 'Understanding numbers up to 10,000 and their place values.',
+            math_chap2_title: 'Chapter 2: Addition & Subtraction',
+            math_chap2_desc: 'Mastering addition and subtraction with and without carrying over.',
+            math_chap3_title: 'Chapter 3: Multiplication',
+            math_chap3_desc: 'Learning multiplication tables and solving word problems.',
+            math_chap4_title: 'Chapter 4: Division',
+            math_chap4_desc: 'Understanding the concept of division and solving simple problems.',
+            math_chap5_title: 'Chapter 5: Fractions',
+            math_chap5_desc: 'Introduction to fractions, comparing, and ordering them.',
+            math_chap6_title: 'Chapter 6: Basic Geometry',
+            math_chap6_desc: 'Identifying basic shapes, lines, and angles.',
+            math_chap7_title: 'Chapter 7: Measurement',
+            math_chap7_desc: 'Learning about length, weight, and volume.',
+            math_chap8_title: 'Chapter 8: Data Handling',
+            math_chap8_desc: 'Creating and interpreting simple charts and graphs.',
+            eng_journey_title: 'English Learning Journey',
+            eng_subject_progress: 'Subject Progress: 25%',
+            eng_chap1_title: 'Chapter 1: The Alphabet',
+            eng_chap1_desc: 'Recognizing and writing all capital and small letters.',
+            eng_chap2_title: 'Chapter 2: Nouns & Pronouns',
+            eng_chap2_desc: 'Identifying naming words and words used in place of them.',
+            eng_chap3_title: 'Chapter 3: Verbs',
+            eng_chap3_desc: 'Understanding action words and their usage in sentences.',
+            eng_chap4_title: 'Chapter 4: Adjectives',
+            eng_chap4_desc: 'Learning about describing words and their types.',
+            eng_chap5_title: 'Chapter 5: Sentence Structure',
+            eng_chap5_desc: 'How to form correct and meaningful sentences.',
+            eng_chap6_title: 'Chapter 6: Punctuation',
+            eng_chap6_desc: 'Using full stops, commas, and question marks correctly.',
+            eng_chap7_title: 'Chapter 7: Reading Comprehension',
+            eng_chap7_desc: 'Reading passages and answering related questions.',
+            sci_journey_title: 'Science Learning Journey',
+            sci_subject_progress: 'Subject Progress: 33%',
+            sci_chap1_title: 'Chapter 1: Living & Non-Living Things',
+            sci_chap1_desc: 'Learning to differentiate between living and non-living things.',
+            sci_chap2_title: 'Chapter 2: The Water Cycle',
+            sci_chap2_desc: 'Understanding evaporation, condensation, and precipitation.',
+            sci_chap3_title: 'Chapter 3: Our Solar System',
+            sci_chap3_desc: 'Exploring the planets, sun, and moon in our solar system.',
+            sci_chap4_title: 'Chapter 4: Plants Around Us',
+            sci_chap4_desc: 'Learning about different types of plants and their parts.',
+            sci_chap5_title: 'Chapter 5: Animals and Their Homes',
+            sci_chap5_desc: 'Exploring different animals and where they live.',
+            sci_chap6_title: 'Chapter 6: States of Matter',
+            sci_chap6_desc: 'Understanding solids, liquids, and gases.',
+            sci_chap7_title: 'Chapter 7: The Human Body',
+            sci_chap7_desc: 'A basic introduction to the parts of the human body.',
+            chatbot_title: 'Chat Help',
+            chatbot_placeholder: 'Type a message...',
+            chatbot_send_btn: 'Send'
+        },
+        pa: {
+            back_to_dashboard: '← ਡੈਸ਼ਬੋਰਡ \'ਤੇ ਵਾਪਸ',
+            offline_mode_label: 'ਔਫਲਾਈਨ ਮੋਡ',
+            offline_banner_text: 'ਔਫਲਾਈਨ ਮੋਡ ਚਾਲੂ ਹੈ',
+            tab_math: 'ਗਣਿਤ',
+            tab_english: 'ਅੰਗਰੇਜ਼ੀ',
+            tab_science: 'ਵਿਗਿਆਨ',
+            review_btn: 'ਸਮੀਖਿਆ ਕਰੋ',
+            continue_lesson_btn: 'ਪਾਠ ਜਾਰੀ ਰੱਖੋ',
+            start_lesson_btn: 'ਪਾਠ ਸ਼ੁਰੂ ਕਰੋ',
+            math_journey_title: 'ਗਣਿਤ ਸਿੱਖਣ ਦਾ ਸਫ਼ਰ',
+            math_subject_progress: 'ਵਿਸ਼ੇ ਦੀ ਪ੍ਰਗਤੀ: 30%',
+            math_chap1_title: 'ਅਧਿਆਇ 1: ਸੰਖਿਆਵਾਂ ਅਤੇ ਸਥਾਨਕ ਮੁੱਲ',
+            math_chap1_desc: '10,000 ਤੱਕ ਦੀਆਂ ਸੰਖਿਆਵਾਂ ਅਤੇ ਉਹਨਾਂ ਦੇ ਸਥਾਨਕ ਮੁੱਲਾਂ ਨੂੰ ਸਮਝਣਾ।',
+            math_chap2_title: 'ਅਧਿਆਇ 2: ਜੋੜ ਅਤੇ ਘਟਾਓ',
+            math_chap2_desc: 'ਹਾਸਲ ਨਾਲ ਅਤੇ ਬਿਨਾਂ ਹਾਸਲ ਦੇ ਜੋੜ ਅਤੇ ਘਟਾਓ ਵਿੱਚ ਮੁਹਾਰਤ ਹਾਸਲ ਕਰਨਾ।',
+            math_chap3_title: 'ਅਧਿਆਇ 3: ਗੁਣਾ',
+            math_chap3_desc: 'ਗੁਣਾ ਦੇ ਪਹਾੜੇ ਸਿੱਖਣਾ ਅਤੇ ਸ਼ਬਦਾਂ ਵਾਲੀਆਂ ਸਮੱਸਿਆਵਾਂ ਨੂੰ ਹੱਲ ਕਰਨਾ।',
+            math_chap4_title: 'ਅਧਿਆਇ 4: ਭਾਗ',
+            math_chap4_desc: 'ਭਾਗ ਦੀ ਧਾਰਨਾ ਨੂੰ ਸਮਝਣਾ ਅਤੇ ਸਧਾਰਨ ਸਮੱਸਿਆਵਾਂ ਨੂੰ ਹੱਲ ਕਰਨਾ।',
+            math_chap5_title: 'ਅਧਿਆਇ 5: ਭਿੰਨਾਂ',
+            math_chap5_desc: 'ਭਿੰਨਾਂ ਦੀ ਜਾਣ-ਪਛਾਣ, ਉਹਨਾਂ ਦੀ ਤੁਲਨਾ ਅਤੇ ਕ੍ਰਮਬੱਧ ਕਰਨਾ।',
+            math_chap6_title: 'ਅਧਿਆਇ 6: ਮੁੱਢਲੀ ਜਿਓਮੈਟਰੀ',
+            math_chap6_desc: 'ਮੁੱਢਲੀਆਂ ਆਕ੍ਰਿਤੀਆਂ, ਰੇਖਾਵਾਂ ਅਤੇ ਕੋਣਾਂ ਦੀ ਪਛਾਣ ਕਰਨਾ।',
+            math_chap7_title: 'ਅਧਿਆਇ 7: ਮਾਪ',
+            math_chap7_desc: 'ਲੰਬਾਈ, ਭਾਰ ਅਤੇ ਆਇਤਨ ਬਾਰੇ ਸਿੱਖਣਾ।',
+            math_chap8_title: 'ਅਧਿਆਇ 8: ਡੇਟਾ ਹੈਂਡਲਿੰਗ',
+            math_chap8_desc: 'ਸਰਲ ਚਾਰਟ ਅਤੇ ਗ੍ਰਾਫ ਬਣਾਉਣਾ ਅਤੇ ਵਿਆਖਿਆ ਕਰਨਾ।',
+            eng_journey_title: 'ਅੰਗਰੇਜ਼ੀ ਸਿੱਖਣ ਦਾ ਸਫ਼ਰ',
+            eng_subject_progress: 'ਵਿਸ਼ੇ ਦੀ ਪ੍ਰਗਤੀ: 25%',
+            eng_chap1_title: 'ਅਧਿਆਇ 1: ਵਰਣਮਾਲਾ',
+            eng_chap1_desc: 'ਸਾਰੇ ਵੱਡੇ ਅਤੇ ਛੋਟੇ ਅੱਖਰਾਂ ਨੂੰ ਪਛਾਣਨਾ ਅਤੇ ਲਿਖਣਾ।',
+            eng_chap2_title: 'ਅਧਿਆਇ 2: ਨਾਂਵ ਅਤੇ ਪੜਨਾਂਵ',
+            eng_chap2_desc: 'ਨਾਮਕਰਨ ਵਾਲੇ ਸ਼ਬਦਾਂ ਅਤੇ ਉਹਨਾਂ ਦੀ ਥਾਂ ਵਰਤੇ ਜਾਣ ਵਾਲੇ ਸ਼ਬਦਾਂ ਦੀ ਪਛਾਣ ਕਰਨਾ।',
+            eng_chap3_title: 'ਅਧਿਆਇ 3: ਕਿਰਿਆਵਾਂ',
+            eng_chap3_desc: 'ਕਿਰਿਆ ਸ਼ਬਦਾਂ ਅਤੇ ਵਾਕਾਂ ਵਿੱਚ ਉਹਨਾਂ ਦੀ ਵਰਤੋਂ ਨੂੰ ਸਮਝਣਾ।',
+            eng_chap4_title: 'ਅਧਿਆਇ 4: ਵਿਸ਼ੇਸ਼ਣ',
+            eng_chap4_desc: 'ਵਰਣਨ ਕਰਨ ਵਾਲੇ ਸ਼ਬਦਾਂ ਅਤੇ ਉਹਨਾਂ ਦੀਆਂ ਕਿਸਮਾਂ ਬਾਰੇ ਸਿੱਖਣਾ।',
+            eng_chap5_title: 'ਅਧਿਆਇ 5: ਵਾਕ ਬਣਤਰ',
+            eng_chap5_desc: 'ਸਹੀ ਅਤੇ ਅਰਥਪੂਰਨ ਵਾਕ ਕਿਵੇਂ ਬਣਾਉਣੇ ਹਨ।',
+            eng_chap6_title: 'ਅਧਿਆਇ 6: ਵਿਸ਼ਰਾਮ ਚਿੰਨ੍ਹ',
+            eng_chap6_desc: 'ਪੂਰਨ ਵਿਰਾਮ, ਕਾਮੇ ਅਤੇ ਪ੍ਰਸ਼ਨ ਚਿੰਨ੍ਹਾਂ ਦੀ ਸਹੀ ਵਰਤੋਂ ਕਰਨਾ।',
+            eng_chap7_title: 'ਅਧਿਆਇ 7: ਪੜ੍ਹਨ ਦੀ ਸਮਝ',
+            eng_chap7_desc: 'ਪੈਰ੍ਹੇ ਪੜ੍ਹਨਾ ਅਤੇ ਸੰਬੰਧਿਤ ਪ੍ਰਸ਼ਨਾਂ ਦੇ ਉੱਤਰ ਦੇਣਾ।',
+            sci_journey_title: 'ਵਿਗਿਆਨ ਸਿੱਖਣ ਦਾ ਸਫ਼ਰ',
+            sci_subject_progress: 'ਵਿਸ਼ੇ ਦੀ ਪ੍ਰਗਤੀ: 33%',
+            sci_chap1_title: 'ਅਧਿਆਇ 1: ਜੀਵਿਤ ਅਤੇ ਨਿਰਜੀਵ ਚੀਜ਼ਾਂ',
+            sci_chap1_desc: 'ਜੀਵਿਤ ਅਤੇ ਨਿਰਜੀਵ ਚੀਜ਼ਾਂ ਵਿੱਚ ਫਰਕ ਕਰਨਾ ਸਿੱਖਣਾ।',
+            sci_chap2_title: 'ਅਧਿਆਇ 2: ਜਲ ਚੱਕਰ',
+            sci_chap2_desc: 'ਵਾਸ਼ਪੀਕਰਨ, ਸੰਘਣਾਪਣ, ਅਤੇ ਵਰਖਾ ਨੂੰ ਸਮਝਣਾ।',
+            sci_chap3_title: 'ਅਧਿਆਇ 3: ਸਾਡਾ ਸੂਰਜੀ ਸਿਸਟਮ',
+            sci_chap3_desc: 'ਸਾਡੇ ਸੂਰਜੀ ਸਿਸਟਮ ਵਿੱਚ ਗ੍ਰਹਿਆਂ, ਸੂਰਜ ਅਤੇ ਚੰਦਰਮਾ ਦੀ ਖੋਜ ਕਰਨਾ।',
+            sci_chap4_title: 'ਅਧਿਆਇ 4: ਸਾਡੇ ਆਲੇ-ਦੁਆਲੇ ਦੇ ਪੌਦੇ',
+            sci_chap4_desc: 'ਵੱਖ-ਵੱਖ ਕਿਸਮਾਂ ਦੇ ਪੌਦਿਆਂ ਅਤੇ ਉਹਨਾਂ ਦੇ ਭਾਗਾਂ ਬਾਰੇ ਸਿੱਖਣਾ।',
+            sci_chap5_title: 'ਅਧਿਆਇ 5: ਜਾਨਵਰ ਅਤੇ ਉਹਨਾਂ ਦੇ ਘਰ',
+            sci_chap5_desc: 'ਵੱਖ-ਵੱਖ ਜਾਨਵਰਾਂ ਅਤੇ ਉਹ ਕਿੱਥੇ ਰਹਿੰਦੇ ਹਨ ਦੀ ਖੋਜ ਕਰਨਾ।',
+            sci_chap6_title: 'ਅਧਿਆਇ 6: ਪਦਾਰਥ ਦੀਆਂ ਅਵਸਥਾਵਾਂ',
+            sci_chap6_desc: 'ਠੋਸ, ਤਰਲ ਅਤੇ ਗੈਸਾਂ ਨੂੰ ਸਮਝਣਾ।',
+            sci_chap7_title: 'ਅਧਿਆਇ 7: ਮਨੁੱਖੀ ਸਰੀਰ',
+            sci_chap7_desc: 'ਮਨੁੱਖੀ ਸਰੀਰ ਦੇ ਅੰਗਾਂ ਬਾਰੇ ਇੱਕ ਮੁੱਢਲੀ ਜਾਣ-ਪਛਾਣ।',
+            chatbot_title: 'ਚੈਟ ਮਦਦ',
+            chatbot_placeholder: 'ਇੱਕ ਸੁਨੇਹਾ ਟਾਈਪ ਕਰੋ...',
+            chatbot_send_btn: 'ਭੇਜੋ'
+        }
+    };
+    const setLanguage = (language) => {    document.querySelectorAll('[data-key]').forEach(element => { const key = element.getAttribute('data-key'); if (translations[language][key]) { element.textContent = translations[language][key]; } });    document.querySelectorAll('[data-key-placeholder]').forEach(element => { const key = element.getAttribute('data-key-placeholder'); if (translations[language][key]) { element.placeholder = translations[language][key]; } }); document.documentElement.lang = language === 'pa' ? 'pa-IN' : 'en-IN';    };
+    languageSwitcher.addEventListener('change', (event) => setLanguage(event.target.value));
+    
+    offlineToggle.addEventListener('change', () => {
+        const isOffline = offlineToggle.checked;
+        offlineBanner.style.display = isOffline ? 'flex' : 'none';
+        onlineOnlyButtons.forEach(link => {
+            if (isOffline) {
+                link.style.cursor = 'not-allowed';
+                link.style.backgroundColor = 'var(--locked-grey)';
+            } else {
+                link.style.cursor = '';
+                link.style.backgroundColor = ''; 
+            }
+        });
+    });
+    setLanguage(languageSwitcher.value);
+    
+    // --- CHATBOT SCRIPT ---
+    const chatFab = document.getElementById('chat-fab');
+    const chatWindow = document.getElementById('chat-window');
+    const chatCloseBtn = document.getElementById('chat-close-btn');
+    const chatMessages = document.getElementById('chat-messages');
+    const chatInput = document.getElementById('chat-input');
+    const chatSendBtn = document.getElementById('chat-send-btn');
+    const chatBotData = { en: { default: "Sorry, I don't understand. Can you ask about navigating the website, like 'how to see math progress' or 'where can I practice typing'?", greeting: "Hello! I am your assistant. How can I help you navigate the platform today?", responses: { 'math progress journey': "To see your Math progress, go to the Student Dashboard and click the 'Continue Lesson' button on the Mathematics card.", 'english progress journey': "To see your English progress, go to the Student Dashboard and click the button on the English card.", 'science progress journey': "To see your Science progress, go to the Student Dashboard and click the button on the Science card.", 'story books read library': "You can find story books in the Library section on your dashboard. Click the 'Read Now' button under 'Story Books'.", 'typing practice keyboard': "Go to the 'Digital Literacy Hub' from your dashboard. Inside, you can find the 'Typing Practice' module.", 'safe safety internet online': "The 'Digital Literacy Hub' has a section on 'Staying Safe Online'. You can access it from the student dashboard.", 'add new assignment upload': "On the Teacher Dashboard, you can find the 'Add New Assignment' form. Fill in the details and click 'Upload Assignment'.", 'student progress see students track': "The 'Student Progress' table on your dashboard shows the name, overall progress, and last active time for each student.", 'offline internet': "You can use the 'Offline Mode' toggle switch at the top of the page. When active, some online-only features might be disabled.", 'language punjabi english': "Use the language switcher dropdown menu at the top-right of the page to switch between English and Punjabi." } }, pa: { default: "ਮਾਫ਼ ਕਰਨਾ, ਮੈਨੂੰ ਸਮਝ ਨਹੀਂ ਆਇਆ। ਕੀ ਤੁਸੀਂ ਵੈੱਬਸਾਈਟ ਨੈਵੀਗੇਟ ਕਰਨ ਬਾਰੇ ਪੁੱਛ ਸਕਦੇ ਹੋ, ਜਿਵੇਂ ਕਿ 'ਗਣਿਤ ਦੀ ਪ੍ਰਗਤੀ ਕਿਵੇਂ ਵੇਖਣੀ ਹੈ' ਜਾਂ 'ਮੈਂ ਟਾਈਪਿੰਗ ਦਾ ਅਭਿਆਸ ਕਿੱਥੇ ਕਰ ਸਕਦਾ ਹਾਂ'?", greeting: "ਸਤਿ ਸ਼੍ਰੀ ਅਕਾਲ! ਮੈਂ ਤੁਹਾਡਾ ਸਹਾਇਕ ਹਾਂ। ਅੱਜ ਮੈਂ ਪਲੇਟਫਾਰਮ ਨੂੰ ਨੈਵੀਗੇਟ ਕਰਨ ਵਿੱਚ ਤੁਹਾਡੀ ਕਿਵੇਂ ਮਦਦ ਕਰ ਸਕਦਾ ਹਾਂ?", responses: { 'ਗਣਿਤ ਪ੍ਰਗਤੀ ਸਫ਼ਰ': "ਆਪਣੀ ਗਣਿਤ ਦੀ ਪ੍ਰਗਤੀ ਦੇਖਣ ਲਈ, ਵਿਦਿਆਰਥੀ ਡੈਸ਼ਬੋਰਡ 'ਤੇ ਜਾਓ ਅਤੇ ਗਣਿਤ ਕਾਰਡ 'ਤੇ 'ਪਾਠ ਜਾਰੀ ਰੱਖੋ' ਬਟਨ 'ਤੇ ਕਲਿੱਕ ਕਰੋ।", 'ਅੰਗਰੇਜ਼ੀ ਪ੍ਰਗਤੀ ਸਫ਼ਰ': "ਆਪਣੀ ਅੰਗਰੇਜ਼ੀ ਦੀ ਪ੍ਰਗਤੀ ਦੇਖਣ ਲਈ, ਵਿਦਿਆਰਥੀ ਡੈਸ਼ਬੋਰਡ 'ਤੇ ਜਾਓ ਅਤੇ ਅੰਗਰੇਜ਼ੀ ਕਾਰਡ 'ਤੇ ਬਟਨ 'ਤੇ ਕਲਿੱਕ ਕਰੋ।", 'ਵਿਗਿਆਨ ਪ੍ਰਗਤੀ ਸਫ਼ਰ': "ਆਪਣੀ ਵਿਗਿਆਨ ਦੀ ਪ੍ਰਗਤੀ ਦੇਖਣ ਲਈ, ਵਿਦਿਆਰਥੀ ਡੈਸ਼ਬੋਰਡ 'ਤੇ ਜਾਓ ਅਤੇ ਵਿਗਿਆਨ ਕਾਰਡ 'ਤੇ ਬਟਨ 'ਤੇ ਕਲਿੱਕ ਕਰੋ।", 'ਕਹਾਣੀ ਕਿਤਾਬਾਂ ਪੜ੍ਹੋ ਲਾਇਬ੍ਰੇਰੀ': "ਤੁਸੀਂ ਆਪਣੇ ਡੈਸ਼ਬੋਰਡ 'ਤੇ ਲਾਇਬ੍ਰੇਰੀ ਸੈਕਸ਼ਨ ਵਿੱਚ ਕਹਾਣੀਆਂ ਦੀਆਂ ਕਿਤਾਬਾਂ ਲੱਭ ਸਕਦੇ ਹੋ। 'ਕਹਾਣੀਆਂ ਦੀਆਂ ਕਿਤਾਬਾਂ' ਦੇ ਹੇਠਾਂ 'ਹੁਣੇ ਪੜ੍ਹੋ' ਬਟਨ 'ਤੇ ਕਲਿੱਕ ਕਰੋ।", 'ਟਾਈਪਿੰਗ ਅਭਿਆਸ ਕੀ-ਬੋਰਡ': "ਆਪਣੇ ਡੈਸ਼ਬੋਰਡ ਤੋਂ 'ਡਿਜੀਟਲ ਸਾਖਰਤਾ ਕੇਂਦਰ' 'ਤੇ ਜਾਓ। ਅੰਦਰ, ਤੁਸੀਂ 'ਟਾਈਪਿੰਗ ਅਭਿਆਸ' ਮੋਡੀਊਲ ਲੱਭ ਸਕਦੇ ਹੋ।", 'ਸੁਰੱਖਿਅਤ ਸੁਰੱਖਿਆ ਇੰਟਰਨੈੱਟ ਆਨਲਾਈਨ': "'ਡਿਜੀਟਲ ਸਾਖਰਤਾ ਕੇਂਦਰ' ਵਿੱਚ 'ਆਨਲਾਈਨ ਸੁਰੱਖਿਅਤ ਰਹਿਣਾ' ਬਾਰੇ ਇੱਕ ਸੈਕਸ਼ਨ ਹੈ। ਤੁਸੀਂ ਇਸਨੂੰ ਵਿਦਿਆਰਥੀ ਡੈਸ਼ਬੋਰਡ ਤੋਂ ਐਕਸੈਸ ਕਰ ਸਕਦੇ ਹੋ।", 'ਨਵਾਂ ਅਸਾਈਨਮੈਂਟ ਸ਼ਾਮਲ ਅੱਪਲੋਡ': "ਅਧਿਆਪਕ ਡੈਸ਼ਬੋਰਡ 'ਤੇ, ਤੁਸੀਂ 'ਨਵੀਂ ਅਸਾਈਨਮੈਂਟ ਸ਼ਾਮਲ ਕਰੋ' ਫਾਰਮ ਲੱਭ ਸਕਦੇ ਹੋ। ਵੇਰਵੇ ਭਰੋ ਅਤੇ 'ਅਸਾਈਨਮੈਂਟ ਅੱਪਲੋਡ ਕਰੋ' 'ਤੇ ਕਲਿੱਕ ਕਰੋ।", 'ਵਿਦਿਆਰਥੀ ਪ੍ਰਗਤੀ ਵਿਦਿਆਰਥੀਆਂ ਨੂੰ ਟਰੈਕ': "ਤੁਹਾਡੇ ਡੈਸ਼ਬੋਰਡ 'ਤੇ 'ਵਿਦਿਆਰਥੀ ਦੀ ਪ੍ਰਗਤੀ' ਸਾਰਣੀ ਹਰੇਕ ਵਿਦਿਆਰਥੀ ਦਾ ਨਾਮ, ਸਮੁੱਚੀ ਪ੍ਰਗਤੀ, ਅਤੇ ਆਖਰੀ ਸਰਗਰਮ ਸਮਾਂ ਦਰਸਾਉਂਦੀ ਹੈ।", 'ਔਫਲਾਈਨ ਇੰਟਰਨੈੱਟ': "ਤੁਸੀਂ ਪੰਨੇ ਦੇ ਸਿਖਰ 'ਤੇ 'ਔਫਲਾਈਨ ਮੋਡ' ਟੌਗਲ ਸਵਿੱਚ ਦੀ ਵਰਤੋਂ ਕਰ ਸਕਦੇ ਹੋ। ਜਦੋਂ ਇਹ ਚਾਲੂ ਹੁੰਦਾ ਹੈ, ਤਾਂ ਕੁਝ ਔਨਲਾਈਨ-ਸਿਰਫ਼ ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ ਅਯੋਗ ਹੋ ਸਕਦੀਆਂ ਹਨ।", 'ਭਾਸ਼ਾ ਪੰਜਾਬੀ ਅੰਗਰੇਜ਼ੀ': "ਅੰਗਰੇਜ਼ੀ ਅਤੇ ਪੰਜਾਬੀ ਵਿੱਚ ਬਦਲਣ ਲਈ ਪੰਨੇ ਦੇ ਉੱਪਰ-ਸੱਜੇ ਪਾਸੇ ਭਾਸ਼ਾ ਸਵਿੱਚਰ ਡ੍ਰੌਪਡਾਉਨ ਮੀਨੂ ਦੀ ਵਰਤੋਂ ਕਰੋ।" } } };
+    const toggleChatWindow = () => { chatWindow.classList.toggle('active'); if (chatWindow.classList.contains('active')) { addMessageToChat('bot', chatBotData[languageSwitcher.value].greeting); } else { chatMessages.innerHTML = ''; } };
+    const addMessageToChat = (sender, message) => { const messageElement = document.createElement('div'); messageElement.classList.add('chat-message', sender === 'user' ? 'user-message' : 'bot-message'); messageElement.textContent = message; chatMessages.appendChild(messageElement); chatMessages.scrollTop = chatMessages.scrollHeight; };
+    const getBotResponse = (userInput) => { const lang = languageSwitcher.value; const lowerInput = userInput.toLowerCase(); const responses = chatBotData[lang].responses; for (const keywords in responses) { const keywordArray = keywords.split(' '); if (keywordArray.some(keyword => lowerInput.includes(keyword))) { return responses[keywords]; } } return chatBotData[lang].default; };
+    const handleSendMessage = () => { const userInput = chatInput.value.trim(); if (userInput === '') return; addMessageToChat('user', userInput); chatInput.value = ''; setTimeout(() => { const botResponse = getBotResponse(userInput); addMessageToChat('bot', botResponse); }, 500); };
+    chatFab.addEventListener('click', toggleChatWindow);
+    chatCloseBtn.addEventListener('click', toggleChatWindow);
+    chatSendBtn.addEventListener('click', handleSendMessage);
+    chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') { handleSendMessage(); } });
+
+});
+</script>
+
+</body>
+</html>
