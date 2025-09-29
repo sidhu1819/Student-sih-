@@ -19,60 +19,98 @@
             --dark-text: #333;
             --light-text: #666;
             --alert-yellow: #ffc107;
+            --sidebar-bg: #2c3e50;
+            --sidebar-hover: #34495e;
+            --sidebar-width: 260px;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * { box-sizing: border-box; margin: 0; padding: 0; scroll-behavior: smooth; }
         body {
             font-family: 'Nunito', sans-serif;
             background-color: var(--light-bg);
             color: var(--dark-text);
         }
-        #offline-banner {
-            display: none; 
-            background-color: #ffc107;
-            color: #333;
-            text-align: center;
-            padding: 10px;
-            font-weight: 700;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
+
+        /* --- NEW SIDEBAR STYLES --- */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--sidebar-bg);
+            color: white;
+            height: 100vh;
+            padding-top: 20px;
+            position: fixed;
+            z-index: 100;
+            overflow-y: auto;
         }
-        .offline-toggle-container {
+        .sidebar-header {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1.6em;
+            font-weight: 800;
+        }
+        .sidebar ul {
+            list-style-type: none;
+        }
+        .sidebar ul a, .sidebar ul .submenu-toggle {
             display: flex;
             align-items: center;
-            gap: 10px;
-            color: white; 
+            padding: 15px 20px;
+            color: white;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
         }
-        .offline-toggle-container span {
-            font-weight: 700;
-            font-size: 0.9rem;
+        .sidebar ul a:hover, .sidebar .has-submenu.open > .submenu-toggle {
+            background-color: var(--sidebar-hover);
         }
-        .switch {
-            position: relative; display: inline-block;
-            width: 50px; height: 28px;
+        .sidebar .has-submenu > .submenu-toggle::after {
+            content: '▶';
+            font-size: 0.7em;
+            margin-left: auto;
+            transition: transform 0.3s;
         }
+        .sidebar .has-submenu.open > .submenu-toggle::after {
+            transform: rotate(90deg);
+        }
+        .sidebar .submenu {
+            background-color: #233140;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-in-out;
+        }
+        .sidebar .submenu.open {
+            max-height: 500px;
+        }
+        .sidebar .submenu li a {
+            padding-left: 40px;
+        }
+
+        /* --- ADJUSTED MAIN CONTENT --- */
+        .dashboard-container {
+            max-width: 1200px;
+            margin-left: var(--sidebar-width); /* Push content to the right */
+            padding: 20px;
+        }
+
+        #offline-banner {
+            display: none; background-color: #ffc107; color: #333; text-align: center;
+            padding: 10px; font-weight: 700; position: sticky; top: 0; z-index: 1000;
+            align-items: center; justify-content: center; gap: 10px;
+        }
+        .offline-toggle-container { display: flex; align-items: center; gap: 10px; color: white; }
+        .offline-toggle-container span { font-weight: 700; font-size: 0.9rem; }
+        .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
         .switch input { display: none; }
         .slider {
-            position: absolute; cursor: pointer;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #ccc;
-            transition: .4s;
-            border-radius: 28px;
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc; transition: .4s; border-radius: 28px;
         }
         .slider:before {
-            position: absolute; content: "";
-            height: 20px; width: 20px;
-            left: 4px; bottom: 4px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
+            position: absolute; content: ""; height: 20px; width: 20px;
+            left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%;
         }
         input:checked + .slider { background-color: var(--secondary-green); }
         input:checked + .slider:before { transform: translateX(22px); }
-        .dashboard-container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        
         .welcome-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white; padding: 25px; border-radius: 16px; margin-bottom: 30px;
@@ -112,29 +150,12 @@
         .card .btn.literacy { background: linear-gradient(45deg, #fd7e14, #ffb900); }
         .card .btn.library { background: linear-gradient(45deg, #4e54c8, #8f94fb); }
         
-        /* --- NOTIFICATION STYLES --- */
-        .notification-card {
-            border-left: 5px solid var(--primary-blue);
-            cursor: pointer;
-        }
-        .notification-card.alert {
-            border-left-color: var(--alert-yellow);
-        }
-        .notification-card h3 {
-            font-size: 1.2rem;
-            color: var(--dark-text);
-        }
-        .notification-card p {
-            font-size: 0.95rem;
-        }
-        .notification-card .timestamp {
-            font-size: 0.8rem;
-            color: var(--light-text);
-            margin-top: 15px;
-            text-align: right;
-        }
+        .notification-card { border-left: 5px solid var(--primary-blue); cursor: pointer; }
+        .notification-card.alert { border-left-color: var(--alert-yellow); }
+        .notification-card h3 { font-size: 1.2rem; color: var(--dark-text); }
+        .notification-card p { font-size: 0.95rem; }
+        .notification-card .timestamp { font-size: 0.8rem; color: var(--light-text); margin-top: 15px; text-align: right; }
 
-        /* --- CHATBOT STYLES --- */
         #chat-fab { position: fixed; bottom: 25px; right: 25px; width: 60px; height: 60px; background: linear-gradient(45deg, #007bff, #0056b3); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); cursor: pointer; z-index: 1001; transition: transform 0.2s; }
         #chat-fab:hover { transform: scale(1.1); }
         #chat-fab svg { width: 32px; height: 32px; color: white; }
@@ -150,9 +171,43 @@
         .chat-input-container { padding: 10px; border-top: 1px solid #eee; display: flex; gap: 10px; }
         #chat-input { flex-grow: 1; border: 1px solid #ccc; border-radius: 20px; padding: 10px 15px; font-size: 1rem; font-family: 'Nunito', sans-serif; }
         #chat-send-btn { border: none; background-color: var(--primary-blue); color: white; font-weight: 700; border-radius: 20px; padding: 10px 20px; cursor: pointer; }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+            .dashboard-container {
+                margin-left: 0;
+            }
+        }
     </style>
 </head>
 <body>
+
+<!-- NEW FOLDER-STYLE SIDEBAR -->
+<div class="sidebar">
+    <h2 class="sidebar-header">Student Portal</h2>
+    <ul>
+        <li><a href="#">🏠 Dashboard</a></li>
+        <li class="has-submenu">
+            <span class="submenu-toggle">📁 Academics</span>
+            <ul class="submenu">
+                <li><a href="#learning-journey-section">📚 My Learning Journey</a></li>
+                <li><a href="#literacy-hub-section">💻 Digital Literacy Hub</a></li>
+            </ul>
+        </li>
+        <li class="has-submenu">
+            <span class="submenu-toggle">📁 Resources</span>
+            <ul class="submenu">
+                <li><a href="#notifications-section">🔔 Notifications</a></li>
+                <li><a href="#library-section">📖 Library</a></li>
+            </ul>
+        </li>
+    </ul>
+</div>
 
 <div id="offline-banner">
     <span data-key="offline_banner_text">Offline Mode Active</span>
@@ -162,7 +217,7 @@
     <header class="welcome-header">
         <div class="welcome-header-top">
             <div>
-                <h1 data-key="greeting">Hello, Gurpreet!</h1>
+                <h1 id="student-greeting" data-key="greeting"></h1>
                 <p data-key="welcome_message">Ready to learn something new today?</p>
             </div>
             <div class="header-controls">
@@ -189,7 +244,7 @@
     </header>
 
     <main>
-        <section>
+        <section id="notifications-section">
             <h2 class="section-title" data-key="notifications_title">Notifications</h2>
             <div class="card-container">
                 <div class="card notification-card">
@@ -205,7 +260,7 @@
             </div>
         </section>
 
-        <section>
+        <section id="learning-journey-section">
             <h2 class="section-title" data-key="learning_journey_title">My Learning Journey</h2>
             <div class="card-container">
                 <div class="card">
@@ -226,7 +281,7 @@
             </div>
         </section>
 
-        <section>
+        <section id="literacy-hub-section">
             <h2 class="section-title" data-key="literacy_hub_title">Digital Literacy Hub</h2>
             <div class="card-container">
                 <div class="card">
@@ -246,8 +301,8 @@
                 </div>
             </div>
         </section>
-            
-        <section>
+                
+        <section id="library-section">
             <h2 class="section-title" data-key="library_title">Library</h2>
             <div class="card-container">
                 <div class="card">
@@ -289,6 +344,21 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+    // --- NEW: SUBMENU FOLDER LOGIC ---
+    document.querySelectorAll('.sidebar .submenu-toggle').forEach(toggle => {
+        toggle.addEventListener('click', () => {
+            const parentLi = toggle.parentElement;
+            parentLi.classList.toggle('open');
+            const submenu = parentLi.querySelector('.submenu');
+            submenu.classList.toggle('open');
+        });
+    });
+
+    // --- NEW: Student Data from a JSON-like object ---
+    const studentData = {
+        name: "Aarav Sharma" // The student's name is now sourced from here
+    };
+
     const languageSwitcher = document.getElementById('language-switcher');
     const offlineToggle = document.getElementById('offline-toggle');
     const offlineBanner = document.getElementById('offline-banner');
@@ -298,7 +368,7 @@ document.addEventListener('DOMContentLoaded', () => {
         en: {
             offline_banner_text: 'Offline Mode Active',
             offline_mode_label: 'Offline Mode',
-            greeting: 'Hello, Gurpreet!',
+            greeting: 'Hello, {studentName}!',
             welcome_message: 'Ready to learn something new today?',
             logout_btn: 'Logout',
             overall_progress: 'Your Overall Progress',
@@ -341,7 +411,7 @@ document.addEventListener('DOMContentLoaded', () => {
         pa: {
             offline_banner_text: 'ਔਫਲਾਈਨ ਮੋਡ ਚਾਲੂ ਹੈ',
             offline_mode_label: 'ਔਫਲਾਈਨ ਮੋਡ',
-            greeting: 'ਸਤਿ ਸ਼੍ਰੀ ਅਕਾਲ, ਗੁਰਪ੍ਰੀਤ!',
+            greeting: 'ਸਤਿ ਸ਼੍ਰੀ ਅਕਾਲ, {studentName}!',
             welcome_message: 'ਅੱਜ ਕੁਝ ਨਵਾਂ ਸਿੱਖਣ ਲਈ ਤਿਆਰ ਹੋ?',
             logout_btn: 'ਲੌਗ ਆਊਟ',
             overall_progress: 'ਤੁਹਾਡੀ ਸਮੁੱਚੀ ਪ੍ਰਗਤੀ',
@@ -387,7 +457,14 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('[data-key]').forEach(element => {
             const key = element.getAttribute('data-key');
             if (translations[language][key]) {
-                element.textContent = translations[language][key];
+                let translatedText = translations[language][key];
+                
+                // Replace placeholder with the actual student name from the JSON object
+                if (key === 'greeting') {
+                    translatedText = translatedText.replace('{studentName}', studentData.name);
+                }
+
+                element.textContent = translatedText;
             }
         });
         document.querySelectorAll('[data-key-placeholder]').forEach(element => {
@@ -427,3 +504,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
+
