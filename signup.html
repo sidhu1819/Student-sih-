@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login/Register - SARV-SIKSHA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#235391',    // Deep blue
+                        secondary: '#1e3a5f',  // Darker blue
+                        accent: '#3a6ea5',     // Lighter blue accent
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .role-card {
+            transition: all 0.3s ease;
+        }
+        .role-card.active {
+            border-color: #9b59b6;
+            background-color: #f8f4fc;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+    <!-- Header -->
+    <header class="bg-white shadow-sm">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <div class="bg-primary text-white p-2 rounded-lg">
+                    <i class="fas fa-graduation-cap text-xl"></i>
+                </div>
+                <span class="text-xl font-bold text-primary">SARV-SIKSHA</span>
+            </div>
+            <nav class="hidden md:flex space-x-6">
+                <a href="index.html" class="hover:text-primary transition">Home</a>
+                <a href="#features" class="hover:text-primary transition">Features</a>
+                <a href="#about" class="hover:text-primary transition">About</a>
+                <a href="#contact" class="hover:text-primary transition">Contact</a>
+            </nav>
+            <button class="md:hidden text-gray-600">
+                <i class="fas fa-bars text-xl"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="py-12 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <div class="max-w-4xl mx-auto">
+                <!-- Page Title -->
+                <div class="text-center mb-10">
+                    <h1 class="text-3xl md:text-4xl font-bold mb-4">Welcome to SARV-SIKSHA</h1>
+                    <p class="text-gray-600 max-w-2xl mx-auto">
+                        Login to your account or register to join our learning community
+                    </p>
+                </div>
+
+                <!-- Login/Register Tabs -->
+                <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                    <div class="flex border-b">
+                        <button id="loginTab" class="flex-1 py-4 px-6 text-center font-medium bg-primary text-white">
+                            Login
+                        </button>
+                        <button id="registerTab" class="flex-1 py-4 px-6 text-center font-medium text-gray-600 hover:bg-gray-50">
+                            Register
+                        </button>
+                    </div>
+
+                    <!-- Role Selection -->
+                    <div class="p-6 border-b">
+                        <h3 class="text-lg font-semibold mb-4">Select your role</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="role-card active border-2 rounded-lg p-4 cursor-pointer text-center" data-role="student">
+                                <div class="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <i class="fas fa-user-graduate text-blue-600 text-2xl"></i>
+                                </div>
+                                <h4 class="font-bold">Student</h4>
+                                <p class="text-sm text-gray-600 mt-1">Access learning materials</p>
+                            </div>
+                            <div class="role-card border-2 rounded-lg p-4 cursor-pointer text-center" data-role="teacher">
+                                <div class="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <i class="fas fa-chalkboard-teacher text-green-600 text-2xl"></i>
+                                </div>
+                                <h4 class="font-bold">Teacher</h4>
+                                <p class="text-sm text-gray-600 mt-1">Create and manage lessons</p>
+                            </div>
+                            <div class="role-card border-2 rounded-lg p-4 cursor-pointer text-center" data-role="school">
+                                <div class="bg-purple-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <i class="fas fa-school text-purple-600 text-2xl"></i>
+                                </div>
+                                <h4 class="font-bold">School</h4>
+                                <p class="text-sm text-gray-600 mt-1">Manage entire institution</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Form Section -->
+                    <div class="p-6">
+                        <!-- Login Form -->
+                        <div id="loginForm">
+                            <h3 class="text-xl font-bold mb-6">Login to your account</h3>
+                            <form id="mainLoginForm">
+                                <div class="mb-4">
+                                    <label class="block text-gray-700 mb-2" for="loginEmail">Email Address</label>
+                                    <input type="email" id="loginEmail" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+                                </div>
+                                <div class="mb-6">
+                                    <label class="block text-gray-700 mb-2" for="loginPassword">Password</label>
+                                    <input type="password" id="loginPassword" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+                                </div>
+                                <div class="flex items-center justify-between mb-6">
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="rememberMe" class="mr-2">
+                                        <label for="rememberMe" class="text-gray-700">Remember me</label>
+                                    </div>
+                                    <a href="#" class="text-primary hover:underline">Forgot password?</a>
+                                </div>
+                                <button type="submit" class="w-full bg-primary hover:bg-secondary text-white py-3 px-4 rounded-lg font-semibold transition">
+                                    Login
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- Register Form -->
+                        <div id="registerForm" class="hidden">
+                            <h3 class="text-xl font-bold mb-6">Create a new account</h3>
+                            <!-- Student Registration Form -->
+                            <div id="studentRegisterForm">
+                                <form id="sRegisterForm">
+                                    <div class="mb-4">
+                                        <label class="block text-gray-700 mb-2" for="studentName">Full Name</label>
+                                        <input type="text" id="studentName" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="block text-gray-700 mb-2" for="studentEmail">Email Address</label>
+                                        <input type="email" id="studentEmail" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="block text-gray-700 mb-2" for="studentSchool">School Name</label>
+                                        <input type="text" id="studentSchool" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="block text-gray-700 mb-2" for="studentGrade">Grade Level</label>
+                                        <select id="studentGrade" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+                                            <option value="">Select Grade</option>
+                                            <option value="1">Grade 1</option>
+                                            <option value="2">Grade 2</option>
+                                            <option value="3">Grade 3</option>
+                                            <option value="4">Grade 4</option>
+                                            <option value="5">Grade 5</option>
+                                            <option value="6">Grade 6</option>
+                                            <option value="7">Grade 7</option>
+                                            <option value="8">Grade 8</option>
+                                            <option value="9">Grade 9</option>
+                                            <option value="10">Grade 10</option>
+                                            <option value="11">Grade 11</option>
+                                            <option value="12">Grade 12</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-6">
+                                        <label class="block text-gray-700 mb-2" for="studentPassword">Password</label>
+                                        <input type="password" id="studentPassword" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+                                    </div>
+                                    <div class="mb-6">
+                                        <label class="block text-gray-700 mb-2" for="studentConfirmPassword">Confirm Password</label>
+                                        <input type="password" id="studentConfirmPassword" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+                                    </div>
+                                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg font-semibold transition">
+                                        Register as Student
+                                    </button>
+                                </form>
+                            </div>
+
+                            <!-- Teacher Registration Form -->
+                            <div id="teacherRegisterForm" class="hidden">
+                                <form id="tRegisterForm">
+                                    <div class="mb-4">
+                                        <label class="block text-gray-700 mb-2" for="teacherName">Full Name</label>
+                                        <input type="text" id="teacherName" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="block text-gray-700 mb-2" for="teacherEmail">Email Address</label>
+                                        <input type="email" id="teacherEmail" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="block text-gray-700 mb-2" for="teacherSchool">School Name</label>
+                                        <input type="text" id="teacherSchool" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="block text-gray-700 mb-2" for="teacherSubject">Primary Subject</label>
+                                        <select id="teacherSubject" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+                                            <option value="">Select Subject</option>
+                                            <option value="math">Mathematics</option>
+                                            <option value="science">Science</option>
+                                            <option value="english">English</option>
+                                            <option value="history">History</option>
+                                            <option value="geography">Geography</option>
+                                            <option value="language">Local Language</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-6">
+                                        <label class="block text-gray-700 mb-2" for="teacherPassword">Password</label>
+                                        <input type="password" id="teacherPassword" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+                                    </div>
+                                    <div class="mb-6">
+                                        <label class="block text-gray-700 mb-2" for="teacherConfirmPassword">Confirm Password</label>
+                                        <input type="password" id="teacherConfirmPassword" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+                                    </div>
+                                    <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white py-3 px-4 rounded-lg font-semibold transition">
+                                        Register as Teacher
+                                    </button>
+                                </form>
+                            </div>
+
+                            <!-- School Registration Form -->
+                            <div id="schoolRegisterForm" class="hidden">
+                                <form id="scRegisterForm">
+                                    <div class="mb-4">
+                                        <label class="block text-gray-700 mb-2" for="schoolName">School Name</label>
+                                        <input type="text" id="schoolName" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="block text-gray-700 mb-2" for="schoolAddress">Address</label>
+                                        <textarea id="schoolAddress" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required></textarea>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="block text-gray-700 mb-2" for="adminName">Administrator Name</label>
+                                        <input type="text" id="adminName" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="block text-gray-700 mb-2" for="adminEmail">Administrator Email</label>
+                                        <input type="email" id="adminEmail" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="block text-gray-700 mb-2" for="studentCount">Number of Students</label>
+                                        <input type="number" id="studentCount" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+                                    </div>
+                                    <div class="mb-6">
+                                        <label class="block text-gray-700 mb-2" for="schoolPassword">Password</label>
+                                        <input type="password" id="schoolPassword" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+                                    </div>
+                                    <div class="mb-6">
+                                        <label class="block text-gray-700 mb-2" for="schoolConfirmPassword">Confirm Password</label>
+                                        <input type="password" id="schoolConfirmPassword" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" required>
+                                    </div>
+                                    <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 px-4 rounded-lg font-semibold transition">
+                                        Register as School
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Additional Links -->
+                <div class="mt-8 text-center">
+                    <p class="text-gray-600">
+                        Don't have an account? 
+                        <a href="index.html" class="text-primary font-medium hover:underline">Back to Home</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12 mt-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <div class="bg-white text-primary p-2 rounded-lg">
+                            <i class="fas fa-graduation-cap text-xl"></i>
+                        </div>
+                        <span class="text-xl font-bold">SARV-SIKSHA</span>
+                    </div>
+                    <p class="text-gray-400">
+                        SARV-SIKSHA is a non-profit initiative committed to providing quality educational resources to underserved communities worldwide.
+                    </p>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-bold mb-4">Quick Links</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">About Us</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">Features</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">Resources</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">Contact</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-bold mb-4">Contact Us</h3>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><i class="fas fa-envelope mr-2"></i> info@sarvsiksha.org</li>
+                        <li><i class="fas fa-phone mr-2"></i> +1 (555) 123-4567</li>
+                        <li><i class="fas fa-map-marker-alt mr-2"></i> 123 Education Lane, Rural District</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-bold mb-4">Download App</h3>
+                    <p class="text-gray-400 mb-4">Available on all major platforms</p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="bg-gray-800 p-2 rounded-lg">
+                            <i class="fab fa-android text-2xl"></i>
+                        </a>
+                        <a href="#" class="bg-gray-800 p-2 rounded-lg">
+                            <i class="fab fa-apple text-2xl"></i>
+                        </a>
+                        <a href="#" class="bg-gray-800 p-2 rounded-lg">
+                            <i class="fab fa-windows text-2xl"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-500">
+                <p>&copy; 2023 SARV-SIKSHA. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Tab switching
+        const loginTab = document.getElementById('loginTab');
+        const registerTab = document.getElementById('registerTab');
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+
+        loginTab.addEventListener('click', () => {
+            loginTab.classList.add('bg-primary', 'text-white');
+            loginTab.classList.remove('text-gray-600');
+            registerTab.classList.remove('bg-primary', 'text-white');
+            registerTab.classList.add('text-gray-600');
+            
+            loginForm.classList.remove('hidden');
+            registerForm.classList.add('hidden');
+        });
+
+        registerTab.addEventListener('click', () => {
+            registerTab.classList.add('bg-primary', 'text-white');
+            registerTab.classList.remove('text-gray-600');
+            loginTab.classList.remove('bg-primary', 'text-white');
+            loginTab.classList.add('text-gray-600');
+            
+            registerForm.classList.remove('hidden');
+            loginForm.classList.add('hidden');
+        });
+
+        // Role selection
+        const roleCards = document.querySelectorAll('.role-card');
+        const studentRegisterForm = document.getElementById('studentRegisterForm');
+        const teacherRegisterForm = document.getElementById('teacherRegisterForm');
+        const schoolRegisterForm = document.getElementById('schoolRegisterForm');
+
+        roleCards.forEach(card => {
+            card.addEventListener('click', () => {
+                // Remove active class from all cards
+                roleCards.forEach(c => c.classList.remove('active'));
+                
+                // Add active class to clicked card
+                card.classList.add('active');
+                
+                // Get the selected role
+                const selectedRole = card.getAttribute('data-role');
+                
+                // Show the appropriate registration form
+                if (selectedRole === 'student') {
+                    studentRegisterForm.classList.remove('hidden');
+                    teacherRegisterForm.classList.add('hidden');
+                    schoolRegisterForm.classList.add('hidden');
+                } else if (selectedRole === 'teacher') {
+                    studentRegisterForm.classList.add('hidden');
+                    teacherRegisterForm.classList.remove('hidden');
+                    schoolRegisterForm.classList.add('hidden');
+                } else if (selectedRole === 'school') {
+                    studentRegisterForm.classList.add('hidden');
+                    teacherRegisterForm.classList.add('hidden');
+                    schoolRegisterForm.classList.remove('hidden');
+                }
+            });
+        });
+
+        // --- NEW: Form submission logic for navigation ---
+
+        // Main Login Form
+        document.getElementById('mainLoginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const selectedRole = document.querySelector('.role-card.active').getAttribute('data-role');
+            
+            switch(selectedRole) {
+                case 'student':
+                    alert('Logging in as Student...');
+                    window.location.href = 'student-dashboard.html';
+                    break;
+                case 'teacher':
+                    alert('Logging in as Teacher...');
+                    window.location.href = 'teacher-dashboard.html';
+                    break;
+                case 'school':
+                    alert('Logging in as School Admin...');
+                    window.location.href = 'school-dashboard.html';
+                    break;
+            }
+        });
+
+        // Student Registration Form
+        document.getElementById('sRegisterForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            alert('Registering as a student...');
+            window.location.href = 'student-dashboard.html';
+        });
+
+        // Teacher Registration Form
+        document.getElementById('tRegisterForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            alert('Registering as a teacher...');
+            window.location.href = 'teacher-dashboard.html';
+        });
+
+        // School Registration Form
+        document.getElementById('scRegisterForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            alert('Registering as a school...');
+            window.location.href = 'school-dashboard.html';
+        });
+
+    </script>
+</body>
+</html>
