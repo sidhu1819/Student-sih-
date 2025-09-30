@@ -23,6 +23,8 @@
             padding-top: 20px;
             position: fixed;
             z-index: 100;
+            display: flex;
+            flex-direction: column;
         }
 
         .sidebar h2 {
@@ -34,6 +36,7 @@
         .sidebar ul {
             list-style-type: none;
             padding: 0;
+            flex-grow: 1; 
         }
 
         .sidebar ul li {
@@ -72,25 +75,60 @@
         .sidebar .submenu {
             list-style-type: none;
             padding-left: 0;
-            background-color: #002244; /* Slightly darker shade for submenu */
+            background-color: #002244; 
             max-height: 0;
             overflow: hidden;
             transition: max-height 0.3s ease-in-out;
         }
 
         .sidebar .submenu.open {
-            max-height: 200px; /* Adjust as needed for more items */
+            max-height: 200px;
         }
 
         .sidebar .submenu li {
-            padding-left: 40px; /* Indent submenu items */
+            padding-left: 40px; 
+        }
+
+        /* --- LOGOUT BUTTON --- */
+        .logout-btn a {
+            display: block;
+            padding: 15px 20px;
+            text-align: center;
+            color: white;
+            text-decoration: none;
+            border-top: 1px solid #00509e;
+            transition: background-color 0.3s;
+        }
+
+        .logout-btn a:hover {
+            background-color: #c82333; 
         }
         
         /* Main Content Area */
         .main-content {
-            margin-left: 250px; /* Same as sidebar width */
+            margin-left: 250px; 
             padding: 20px;
             width: 100%;
+        }
+        
+        /* --- SCHOOL HEADER --- */
+        .school-header {
+            background-color: #fff;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
+
+        .school-header h1 {
+            margin: 0;
+            font-size: 1.8em;
+            color: #003366;
+        }
+
+        .school-header p {
+            margin: 5px 0 0;
+            color: #555;
         }
         
         header h1 {
@@ -159,38 +197,7 @@
         table tr:hover {
             background-color: #f9f9f9;
         }
-
-        .notification-list {
-            list-style: none;
-            padding: 0;
-        }
-
-        .notification-item {
-            border-bottom: 1px solid #eee;
-            padding: 15px 5px;
-        }
-
-        .notification-item:last-child {
-            border-bottom: none;
-        }
-
-        .notification-item h4 {
-            margin: 0 0 5px 0;
-            color: #00509e;
-        }
-
-        .notification-item p {
-            margin: 0;
-            color: #555;
-        }
         
-        .notification-item .timestamp {
-            font-size: 0.8em;
-            color: #999;
-            margin-top: 5px;
-        }
-
-
         /* Form Styling */
         .form-container {
             padding: 20px;
@@ -228,27 +235,131 @@
         .hidden {
             display: none;
         }
+        
+        /* --- AI CHATBOT STYLES --- */
+        .chatbot-toggle {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background-color: #003366;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 28px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            z-index: 1000;
+        }
+
+        .chatbot-container {
+            position: fixed;
+            bottom: 100px;
+            right: 30px;
+            width: 350px;
+            height: 450px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 1000;
+        }
+
+        .chat-header {
+            background-color: #003366;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .chat-window {
+            flex-grow: 1;
+            padding: 15px;
+            overflow-y: auto;
+            background-color: #f4f7fa;
+        }
+        
+        .chat-message {
+            margin-bottom: 12px;
+            padding: 8px 12px;
+            border-radius: 15px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+        
+        .bot-message {
+            background-color: #e9e9eb;
+            color: #333;
+            align-self: flex-start;
+        }
+        
+        .user-message {
+            background-color: #007bff;
+            color: white;
+            margin-left: auto;
+        }
+        
+        .chat-input-area {
+            display: flex;
+            padding: 10px;
+            border-top: 1px solid #ddd;
+        }
+
+        #chat-input {
+            flex-grow: 1;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            padding: 10px 15px;
+            outline: none;
+        }
+
+        #chat-send-btn {
+            background-color: #003366;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 18px;
+            margin-left: 10px;
+            cursor: pointer;
+        }
+
     </style>
 </head>
 <body>
 
     <div class="sidebar">
-        <h2>School Admin</h2>
-        <ul>
-            <li class="active" onclick="showSection('dashboard')">📊 Dashboard</li>
-            <li class="has-submenu">
-                <a>📁 Management</a>
-                <ul class="submenu">
-                    <li onclick="showSection('students')">🎓 Students</li>
-                    <li onclick="showSection('faculty')">🧑‍🏫 Faculty</li>
-                    <li onclick="showSection('classes')">🏫 Classes</li>
-                </ul>
-            </li>
-            <li onclick="showSection('notifications')">🔔 Notifications</li>
-        </ul>
+        <div>
+            <h2>School Admin</h2>
+            <ul>
+                <li class="active" onclick="showSection('dashboard')">📊 Dashboard</li>
+                <li class="has-submenu">
+                    <a>📁 Management</a>
+                    <ul class="submenu">
+                        <li onclick="showSection('students')">🎓 Students</li>
+                        <li onclick="showSection('faculty')">🧑‍🏫 Faculty</li>
+                        <li onclick="showSection('classes')">🏫 Classes</li>
+                    </ul>
+                </li>
+                <li onclick="showSection('notifications')">🔔 Notifications</li>
+            </ul>
+        </div>
+        <div class="logout-btn">
+            <a href="signup.html">🚪 Logout</a>
+        </div>
     </div>
 
     <div class="main-content">
+        <div class="school-header">
+            <h1>Global Knowledge Academy</h1>
+            <p>123 Education Lane, Knowledge City, Hyderabad, Telangana</p>
+        </div>
+        
         <header>
             <h1 id="header-title">Dashboard Overview</h1>
         </header>
@@ -280,24 +391,6 @@
                         <button type="submit">Add Student</button>
                     </form>
                 </div>
-                <div class="form-container">
-                    <h3>Add New Teacher</h3>
-                    <form id="add-teacher-form">
-                        <input type="number" id="teacher-id" placeholder="Faculty ID" required>
-                        <input type="text" id="teacher-name" placeholder="Full Name" required>
-                        <input type="text" id="teacher-subject" placeholder="Subject" required>
-                        <input type="email" id="teacher-email" placeholder="Email Address" required>
-                        <button type="submit">Add Teacher</button>
-                    </form>
-                </div>
-                <div class="form-container">
-                    <h3>Add New Class</h3>
-                    <form id="add-class-form-quick">
-                        <input type="text" id="class-name-quick" placeholder="Class Name (e.g., Grade 10 - A)" required>
-                        <input type="text" id="class-teacher-quick" placeholder="Assigned Teacher's Name" required>
-                        <button type="submit">Add Class</button>
-                    </form>
-                </div>
             </div>
         </main>
 
@@ -314,7 +407,7 @@
         </main>
 
         <main id="faculty" class="content-section hidden">
-            <div class="details-section">
+             <div class="details-section">
                 <h2>Faculty Details</h2>
                 <table id="faculty-table">
                     <thead>
@@ -326,49 +419,35 @@
         </main>
         
         <main id="classes" class="content-section hidden">
-            <div class="details-section">
+             <div class="details-section">
                 <h2>Manage Classes</h2>
-                <div class="form-container">
-                    <h3>Add New Class</h3>
-                    <form id="add-class-form">
-                        <input type="text" id="class-name" placeholder="Class Name (e.g., Grade 10 - A)" required>
-                        <input type="text" id="class-teacher" placeholder="Assigned Teacher's Name" required>
-                        <button type="submit">Add Class</button>
-                    </form>
-                </div>
-                <h2 style="margin-top: 30px;">Existing Classes</h2>
-                <table id="class-table">
+                 <table id="class-table">
                     <thead>
-                        <tr>
-                            <th>Class Name</th>
-                            <th>Teacher Assigned</th>
-                        </tr>
+                        <tr><th>Class Name</th><th>Teacher Assigned</th></tr>
                     </thead>
-                    <tbody>
-                        <!-- Class data will be populated by JS -->
-                    </tbody>
+                    <tbody></tbody>
                 </table>
             </div>
         </main>
 
         <main id="notifications" class="content-section hidden">
-            <div class="details-section">
-                <h2>Manage Notifications</h2>
-                <div class="form-container">
-                    <h3>Create a New Notification</h3>
-                    <form id="add-notification-form">
-                        <input type="text" id="notification-title" placeholder="Notification Title" required>
-                        <textarea id="notification-message" placeholder="Enter the notification message..." required rows="4"></textarea>
-                        <button type="submit">Send Notification</button>
-                    </form>
-                </div>
-                
-                <h2 style="margin-top: 30px;">Sent Notifications</h2>
-                <ul class="notification-list" id="notification-list">
-                    <!-- Notifications will be dynamically added here -->
-                </ul>
+             <div class="details-section">
+                <h2>Sent Notifications</h2>
+                <ul id="notification-list"></ul>
             </div>
         </main>
+        
+        <button class="chatbot-toggle" id="chatbot-toggle">💬</button>
+        <div class="chatbot-container hidden" id="chatbot-container">
+            <div class="chat-header">AI Assistant</div>
+            <div class="chat-window" id="chat-window">
+                </div>
+            <div class="chat-input-area">
+                <input type="text" id="chat-input" placeholder="Ask a question...">
+                <button id="chat-send-btn">➤</button>
+            </div>
+        </div>
+
     </div>
 
     <script>
@@ -389,8 +468,7 @@
         ];
 
         let notifications = [
-            { title: 'Upcoming Science Fair', message: 'All students and faculty are invited.', timestamp: '2 days ago' },
-            { title: 'Holiday Notice: Diwali Break', message: 'The school will be closed from Oct 20th to Oct 25th.', timestamp: '1 week ago' }
+            { title: 'Upcoming Science Fair', message: 'All students and faculty are invited.', timestamp: '2 days ago' }
         ];
 
         // --- DOM ELEMENTS ---
@@ -401,13 +479,8 @@
         const facultyCountEl = document.getElementById('faculty-count');
         const classCountEl = document.getElementById('class-count');
         const addStudentForm = document.getElementById('add-student-form');
-        const addTeacherForm = document.getElementById('add-teacher-form');
-        const addClassForm = document.getElementById('add-class-form');
-        const addClassFormQuick = document.getElementById('add-class-form-quick');
         const headerTitle = document.getElementById('header-title');
-        const addNotificationForm = document.getElementById('add-notification-form');
-        const notificationList = document.getElementById('notification-list');
-
+        
         // --- CORE RENDER FUNCTIONS ---
         function renderStudents() {
             studentTableBody.innerHTML = '';
@@ -425,16 +498,6 @@
             classTableBody.innerHTML = '';
             classes.forEach(c => { classTableBody.innerHTML += `<tr><td>${c.name}</td><td>${c.teacher}</td></tr>`; });
             updateCounts();
-        }
-        
-        function renderNotifications() {
-            notificationList.innerHTML = ''; 
-            notifications.forEach(n => {
-                const item = document.createElement('li');
-                item.className = 'notification-item';
-                item.innerHTML = `<h4>${n.title}</h4><p>${n.message}</p><div class="timestamp">Posted: ${n.timestamp}</div>`;
-                notificationList.appendChild(item);
-            });
         }
 
         function updateCounts() {
@@ -454,58 +517,23 @@
             addStudentForm.reset();
             alert('Student added successfully!');
         }
-
-        function handleAddTeacher(e) {
-            e.preventDefault();
-            teachers.push({
-                id: document.getElementById('teacher-id').value, name: document.getElementById('teacher-name').value,
-                subject: document.getElementById('teacher-subject').value, email: document.getElementById('teacher-email').value
-            });
-            renderFaculty();
-            addTeacherForm.reset();
-            alert('Teacher added successfully!');
-        }
-
-        function handleAddClass(e) {
-            e.preventDefault();
-            classes.push({
-                name: document.getElementById('class-name').value, teacher: document.getElementById('class-teacher').value
-            });
-            renderClasses();
-            addClassForm.reset();
-            alert('Class added successfully!');
-        }
         
-        function handleAddClassQuick(e) {
-            e.preventDefault();
-            classes.push({
-                name: document.getElementById('class-name-quick').value, teacher: document.getElementById('class-teacher-quick').value
-            });
-            renderClasses();
-            addClassFormQuick.reset();
-            alert('Class added successfully!');
-        }
-        
-        function handleAddNotification(e) {
-            e.preventDefault();
-            notifications.unshift({
-                title: document.getElementById('notification-title').value,
-                message: document.getElementById('notification-message').value,
-                timestamp: 'Just now'
-            });
-            renderNotifications();
-            addNotificationForm.reset();
-            alert('Notification sent successfully!');
-        }
-
+        // --- NAVIGATION & UI ---
         function showSection(sectionId) {
             document.querySelectorAll('.content-section').forEach(section => section.classList.add('hidden'));
             document.getElementById(sectionId).classList.remove('hidden');
             
-            headerTitle.textContent = sectionId === 'dashboard' ? 'Dashboard Overview' : `${sectionId.charAt(0).toUpperCase() + sectionId.slice(1)} Details`;
+            const titleMap = {
+                dashboard: 'Dashboard Overview',
+                students: 'Student Management',
+                faculty: 'Faculty Management',
+                classes: 'Class Management',
+                notifications: 'Notifications'
+            };
+            headerTitle.textContent = titleMap[sectionId] || 'Details';
             
-            const clickedItem = document.querySelector(`.sidebar li[onclick="showSection('${sectionId}')"]`);
             document.querySelectorAll('.sidebar li').forEach(item => item.classList.remove('active'));
+            const clickedItem = document.querySelector(`.sidebar li[onclick="showSection('${sectionId}')"]`);
             if (clickedItem) {
                 clickedItem.classList.add('active');
                 const parentSubmenu = clickedItem.closest('.has-submenu');
@@ -513,8 +541,6 @@
                     parentSubmenu.classList.add('open');
                     parentSubmenu.querySelector('.submenu').classList.add('open');
                 }
-            } else {
-                 document.querySelector('.sidebar li[onclick="showSection(\'dashboard\')"]').classList.add('active');
             }
         }
 
@@ -529,22 +555,75 @@
             });
         }
 
+        // --- AI CHATBOT LOGIC ---
+        const chatbotToggle = document.getElementById('chatbot-toggle');
+        const chatbotContainer = document.getElementById('chatbot-container');
+        const chatWindow = document.getElementById('chat-window');
+        const chatInput = document.getElementById('chat-input');
+        const chatSendBtn = document.getElementById('chat-send-btn');
+
+        let isChatbotOpen = false;
+
+        chatbotToggle.addEventListener('click', () => {
+            chatbotContainer.classList.toggle('hidden');
+            isChatbotOpen = !isChatbotOpen;
+            if (isChatbotOpen && chatWindow.children.length === 0) {
+                 appendMessage('Hello! I am your offline AI assistant. Ask me about student, faculty, or class counts.', 'bot');
+            }
+        });
+
+        chatSendBtn.addEventListener('click', sendMessage);
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        function sendMessage() {
+            const userText = chatInput.value.trim();
+            if (userText === '') return;
+
+            appendMessage(userText, 'user');
+            chatInput.value = '';
+            
+            setTimeout(() => {
+                const botResponse = getBotResponse(userText);
+                appendMessage(botResponse, 'bot');
+            }, 500);
+        }
+        
+        function appendMessage(text, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message ${sender}-message`;
+            messageDiv.textContent = text;
+            chatWindow.appendChild(messageDiv);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+
+        function getBotResponse(userInput) {
+            const input = userInput.toLowerCase();
+            if (input.includes('hello') || input.includes('hi')) {
+                return 'Hello! How can I assist you with school data?';
+            } else if (input.includes('student') && (input.includes('count') || input.includes('how many'))) {
+                return `We currently have ${students.length} students enrolled.`;
+            } else if ((input.includes('teacher') || input.includes('faculty')) && (input.includes('count') || input.includes('how many'))) {
+                return `There are ${teachers.length} faculty members.`;
+            } else if (input.includes('class') && (input.includes('count') || input.includes('how many'))) {
+                return `There are ${classes.length} classes available.`;
+            } else if (input.includes('thank')) {
+                return 'You\'re welcome!';
+            } else {
+                return 'I can only provide counts for students, faculty, and classes. Please try asking "how many students are there?".';
+            }
+        }
+
         // --- INITIALIZATION ---
         addStudentForm.addEventListener('submit', handleAddStudent);
-        addTeacherForm.addEventListener('submit', handleAddTeacher);
-        addClassForm.addEventListener('submit', handleAddClass);
-        addNotificationForm.addEventListener('submit', handleAddNotification);
-        addClassFormQuick.addEventListener('submit', handleAddClassQuick);
-        
         setupSubmenu();
-        
         renderStudents();
         renderFaculty();
         renderClasses();
-        renderNotifications();
         showSection('dashboard');
     </script>
 </body>
 </html>
-
-
